@@ -14,7 +14,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
 
-    <!-- Marked for Markdown Parsing in Chatbot -->
+    <!-- Marked.js for Chatbot Markdown Parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <script>
@@ -62,17 +62,15 @@
         .report-preview .field-label { font-size: 9pt; color: #64748b; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; }
         .report-preview .field-value { font-size: 11pt; line-height: 1.8; color: #0f172a; white-space: pre-wrap; border-left: 3px solid #94a3b8; padding-left: 1rem; margin: 0; }
         
-        /* 解決 LaTeX 溢出問題 */
         .katex-display { overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; }
-
-        /* Chatbot Markdown 樣式優化 */
-        .chatbot-markdown-content { word-break: break-word; }
-        .chatbot-markdown-content p { margin-bottom: 0.5rem; }
-        .chatbot-markdown-content p:last-child { margin-bottom: 0; }
-        .chatbot-markdown-content ul { list-style-type: disc; margin-left: 1.2rem; margin-bottom: 0.5rem; }
-        .chatbot-markdown-content ol { list-style-type: decimal; margin-left: 1.2rem; margin-bottom: 0.5rem; }
-        .chatbot-markdown-content h3, .chatbot-markdown-content h4 { font-weight: 700; color: #1e3a8a; margin-top: 0.75rem; margin-bottom: 0.25rem; }
-        .chatbot-markdown-content strong { color: #1e3a8a; font-weight: 700; }
+        
+        .chatbot-markdown h3 { font-size: 1.1em; font-weight: bold; color: #1e3a8a; margin-top: 12px; margin-bottom: 6px; }
+        .chatbot-markdown h4 { font-size: 1.05em; font-weight: bold; color: #3b82f6; margin-top: 10px; margin-bottom: 4px; }
+        .chatbot-markdown p { margin-bottom: 8px; line-height: 1.6; }
+        .chatbot-markdown p:last-child { margin-bottom: 0; }
+        .chatbot-markdown ul { list-style-type: disc; padding-left: 20px; margin-bottom: 8px; }
+        .chatbot-markdown li { margin-bottom: 4px; }
+        .chatbot-markdown strong { font-weight: bold; color: #0f172a; }
     </style>
 </head>
 <body class="h-screen overflow-hidden flex flex-col antialiased selection:bg-primary-200 selection:text-primary-900">
@@ -95,10 +93,10 @@
                     <button onclick="window.toggleKey()" class="text-slate-400 hover:text-white mx-1 sm:mx-2 transition-colors"><i class="fas fa-eye text-xs" id="keyIcon"></i></button>
                     <button onclick="window.saveKey()" class="text-primary-400 hover:text-primary-300 text-xs font-bold transition-colors ml-1 sm:ml-2">設定</button>
                 </div>
-                <!-- 修正 API Key 連結對齊 -->
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="self-end text-[10px] text-primary-400 hover:text-primary-300 hover:underline mt-1 mr-3 sm:mr-4 flex items-center gap-1">
-                    <i class="fas fa-external-link-alt"></i> 免費取得金鑰
-                </a>
+                <!-- 對齊修正：添加 w-full 與 text-right -->
+                <div class="w-full text-right mt-1 pr-2">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-primary-400 hover:text-primary-300 hover:underline"><i class="fas fa-external-link-alt"></i> 免費取得金鑰</a>
+                </div>
             </div>
 
             <div class="flex items-center gap-4 pl-4 sm:pl-6 border-l border-slate-700">
@@ -276,7 +274,7 @@
         </div>
     </div>
 
-    <!-- UI Fix: Separated Profile Header and Scrollable Content -->
+    <!-- Profile Modal Fix: TONY 楊文澤顧問 + List Outside -->
     <div id="profileModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden animate-fade-in p-4" onclick="if(event.target===this) window.hideModal('profileModal')">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all animate-slide-up flex flex-col max-h-[90vh] relative pt-16 mt-16">
             <!-- Avatar moved OUTSIDE overflow container to prevent clipping -->
@@ -289,46 +287,41 @@
             
             <div class="px-8 pb-8 flex-1 overflow-y-auto">
                 <div class="pt-16 text-center">
-                    <h2 class="text-2xl font-bold text-slate-900 mb-2 tracking-tight">TONY 楊文澤顧問</h2>
-                    <div class="flex flex-wrap justify-center gap-2 text-primary-600 text-[13px] font-bold mb-8">
-                        <span>資深數位行銷科技顧問</span>
-                        <span class="text-slate-300">|</span>
-                        <span>生成式 AI 創作者</span>
-                        <span class="text-slate-300">|</span>
-                        <span>創業導師</span>
-                    </div>
+                    <!-- 標題調整 -->
+                    <h2 class="text-2xl font-bold text-slate-900 mb-1">TONY 楊文澤顧問</h2>
+                    <p class="text-primary-600 text-[13px] font-bold mb-6">資深數位行銷科技顧問 | 生成式 AI 創作者 | 創業導師</p>
                     
                     <div class="space-y-6 text-sm text-slate-600 text-left">
                         <div>
                             <h3 class="font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2 mb-3"><i class="fas fa-briefcase text-primary-500 w-5 text-center"></i> 現職</h3>
-                            <!-- 修正縮排寫法：使用 list-outside 與 ml-5 避免文字換行折回項目符號下方 -->
-                            <ul class="list-disc list-outside ml-5 space-y-2 text-[13px]">
-                                <li class="leading-relaxed">龍華科大 數位行銷講師</li>
-                                <li class="leading-relaxed">智策慧 品牌行銷科技顧問</li>
+                            <!-- 修正縮排：使用 list-outside 與 ml-5 確保多行文字對齊 -->
+                            <ul class="list-disc list-outside space-y-2 ml-5 text-[13px] leading-relaxed">
+                                <li>龍華科大 數位行銷講師</li>
+                                <li>智策慧 品牌行銷科技顧問</li>
                             </ul>
                         </div>
                         <div>
                             <h3 class="font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2 mb-3"><i class="fas fa-history text-primary-500 w-5 text-center"></i> 經歷</h3>
-                            <ul class="list-disc list-outside ml-5 space-y-2 text-[13px]">
-                                <li class="leading-relaxed">脈動心聯股份有限公司 創辦人暨執行長</li>
-                                <li class="leading-relaxed">宏碁集團建碁 AOPEN 整合營銷處處長 / 全球品牌行銷總監 / 企業發言人</li>
-                                <li class="leading-relaxed">台灣數位看板多媒體聯盟 (DSMA) 副會長</li>
+                            <ul class="list-disc list-outside space-y-2 ml-5 text-[13px] leading-relaxed">
+                                <li>脈動心聯股份有限公司 創辦人暨執行長</li>
+                                <li>宏碁集團建碁 AOPEN 整合營銷處處長 / 全球品牌行銷總監 / 企業發言人</li>
+                                <li>台灣數位看板多媒體聯盟 (DSMA) 副會長</li>
                             </ul>
                         </div>
                          <div>
                             <h3 class="font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2 mb-3"><i class="fas fa-graduation-cap text-primary-500 w-5 text-center"></i> 學歷</h3>
-                            <ul class="list-disc list-outside ml-5 space-y-2 text-[13px]">
-                                <li class="leading-relaxed">台大 EMBA 商學組</li>
-                                <li class="leading-relaxed">美國 Arizona State University 互動多媒體設計</li>
-                                <li class="leading-relaxed">北科大 工業設計</li>
+                            <ul class="list-disc list-outside space-y-2 ml-5 text-[13px] leading-relaxed">
+                                <li>台大 EMBA 商學組</li>
+                                <li>美國 Arizona State University 互動多媒體設計</li>
+                                <li>北科大 工業設計</li>
                             </ul>
                         </div>
                         <div>
                             <h3 class="font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2 mb-3"><i class="fas fa-chalkboard-teacher text-primary-500 w-5 text-center"></i> 專家授課經歷</h3>
-                            <ul class="list-disc list-outside ml-5 space-y-2 text-[13px]">
-                                <li class="leading-relaxed">CPC 生產力中心 經營管理顧問師班 講師</li>
-                                <li class="leading-relaxed">台大 / 長榮 / 政大 / 世新 EMBA 業師</li>
-                                <li class="leading-relaxed">2025 新光人壽 AI 工具應用 企業內訓講師</li>
+                            <ul class="list-disc list-outside space-y-2 ml-5 text-[13px] leading-relaxed">
+                                <li>CPC 生產力中心 經營管理顧問師班 講師</li>
+                                <li>台大 / 長榮 / 政大 / 世新 EMBA 業師</li>
+                                <li>2025 新光人壽 AI 工具應用 企業內訓講師</li>
                             </ul>
                         </div>
                     </div>
@@ -366,9 +359,14 @@
         };
 
         let app, db, auth, currentUid = null, isOnline = false, currentUser = null;
-        const LOCAL_STORAGE_KEY = 'sixLayerEnterprise_v10';
+        const LOCAL_STORAGE_KEY = 'sixLayerEnterprise_v11';
         let appState = { apiKey: '', projects: {}, currentProjectId: null, currentStageId: 'problem' };
         let chatFontSize = 14;
+
+        // 設定 marked.js 的選項，確保換行正確
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({ breaks: true, gfm: true });
+        }
 
         const DIAGNOSIS_STAGES = [
             {
@@ -454,6 +452,24 @@
             }
         ];
 
+        window.initTemplates = function() {
+            document.getElementById('templateListArea').innerHTML = TEMPLATES.map((tpl, i) => `
+                <div class="border border-slate-200 rounded-xl p-4 sm:p-5 hover:border-primary-400 hover:shadow-md transition-all cursor-pointer bg-slate-50 group flex flex-col h-full" onclick="window.loadTemplate(${i})">
+                    <h3 class="font-bold text-slate-800 text-sm sm:text-base mb-2 group-hover:text-primary-600 transition-colors">${tpl.title}</h3>
+                    <p class="text-slate-500 text-xs sm:text-sm leading-relaxed flex-1">${tpl.desc}</p>
+                    <div class="mt-4 text-right">
+                        <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full border border-indigo-100">內含 3P 盲點測試</span>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.loadTemplate = function(i) {
+            window.createNewProject(TEMPLATES[i].data, TEMPLATES[i].title);
+            window.hideModal('templateModal');
+            window.showToast(`已載入範本！請點擊右下角「顧問深度追問」，看 AI 如何抓出缺乏限制的盲點。`);
+        };
+
         window.showToast = function(msg, type = 'success') {
             const el = document.getElementById('customAlert');
             const icon = document.getElementById('customAlertIcon');
@@ -519,7 +535,7 @@
             } catch (e) { isOnline = false; updateSyncUI(false); }
 
             loadFromLocal();
-            initTemplates();
+            initTemplates(); 
             if (Object.keys(appState.projects).length === 0) window.createNewProject();
             else { renderDashboard(); window.navigate('dashboard'); }
             
@@ -742,10 +758,7 @@
                 }
                 html += `</ul></div>`;
                 chat.insertAdjacentHTML('beforeend', html);
-                // 確保滾動到底部 (替換為 setTimeout 確保渲染完畢再滾動)
-                setTimeout(() => {
-                    chat.scrollTop = chat.scrollHeight;
-                }, 50);
+                chat.scrollTop = chat.scrollHeight;
             }
         };
 
@@ -834,7 +847,10 @@
             document.getElementById('reportLoadingOverlay').classList.add('flex');
             
             const sys = `撰寫企業戰略診斷報告。使用繁體中文 Markdown。
-            對於任何量化指標、財務預測公式或商業模型推演，必須使用 LaTeX 語法（例如 $ROI = \\frac{Net Profit}{Investment}$ 或 $$...$$）。`;
+            【排版嚴格限制 - 必須遵守】：
+            1. 絕對禁止使用純文字符號 (ASCII Art，如 +---+, |, ^, --->) 來繪製矩陣、架構圖或時間軸。
+            2. 所有的矩陣分析 (如利益關係人矩陣、風險矩陣)、時間軸與行動計畫，都「必須」使用標準的 Markdown 表格 (Table) 來呈現 (格式：| 欄位1 | 欄位2 |)。
+            3. 對於任何量化指標、財務預測公式或商業模型推演，必須使用 LaTeX 語法（例如 $ROI = \\frac{Net Profit}{Investment}$ 或 $$...$$）。`;
             
             const res = await callGemini(sys, JSON.stringify(proj.data), false);
             document.getElementById('reportLoadingOverlay').classList.add('hidden');
@@ -855,7 +871,6 @@
             if (proj.aiReportText) html += `<div style="margin-bottom: 60px;">${proj.aiReportText}</div>`;
             container.innerHTML = html;
 
-            // Trigger KaTeX render
             if (window.renderMathInElement) {
                 renderMathInElement(container, {
                     delimiters: [
@@ -877,24 +892,6 @@
             link.download = `${projTitle}_報告.doc`;
             link.click();
         };
-
-        function initTemplates() {
-            document.getElementById('templateListArea').innerHTML = TEMPLATES.map((tpl, i) => `
-                <div class="border border-slate-200 rounded-xl p-4 sm:p-5 hover:border-primary-400 hover:shadow-md transition-all cursor-pointer bg-slate-50 group flex flex-col h-full" onclick="window.loadTemplate(${i})">
-                    <h3 class="font-bold text-slate-800 text-sm sm:text-base mb-2 group-hover:text-primary-600 transition-colors">${tpl.title}</h3>
-                    <p class="text-slate-500 text-xs sm:text-sm leading-relaxed flex-1">${tpl.desc}</p>
-                    <div class="mt-4 text-right">
-                        <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full border border-indigo-100">內含 3P 盲點測試</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function loadTemplate(i) {
-            window.createNewProject(TEMPLATES[i].data, TEMPLATES[i].title);
-            window.hideModal('templateModal');
-            window.showToast('已載入範本！請點擊右下角「顧問深度追問」，看 AI 如何抓出缺乏限制的盲點。');
-        }
 
         function initChatbotDragAndResize() {
             const chatbot = document.getElementById('chatbot-container');
@@ -974,13 +971,12 @@
             const fab = document.getElementById('chatbot-fab');
             if (cb.classList.contains('hidden')) {
                 cb.classList.remove('hidden'); 
-                cb.classList.add('flex'); // 確保重新開啟時套用 flex 佈局，這樣 scroll 才能生效
+                cb.classList.add('flex');
                 cb.style.top = ''; cb.style.left = ''; cb.style.bottom = '24px'; cb.style.right = '24px';
                 document.getElementById('chatbot-input').focus();
                 fab.classList.add('hidden'); fab.classList.remove('flex');
             } else {
-                cb.classList.add('hidden'); 
-                cb.classList.remove('flex'); // 關閉時移除 flex
+                cb.classList.add('hidden'); cb.classList.remove('flex');
                 fab.classList.remove('hidden'); fab.classList.add('flex');
             }
         };
@@ -997,9 +993,7 @@
             const messagesArea = document.getElementById('chatbot-messages');
             messagesArea.insertAdjacentHTML('beforeend', `<div id="${loadingId}" class="flex"><div class="bg-white border border-slate-200 text-slate-400 rounded-xl rounded-tl-none p-3 shadow-sm animate-pulse"><i class="fas fa-ellipsis-h"></i></div></div>`);
             
-            setTimeout(() => {
-                messagesArea.scrollTop = messagesArea.scrollHeight;
-            }, 50);
+            setTimeout(() => { messagesArea.scrollTop = messagesArea.scrollHeight; }, 10);
 
             let contextStr = "目前無專案資料。";
             if (appState.currentProjectId && appState.currentStageId) {
@@ -1007,10 +1001,10 @@
                 if (stageData) contextStr = JSON.stringify(stageData, null, 2);
             }
 
-            const sysPrompt = `你是 TONY AI 顧問助理。請使用繁體中文。你可以使用 Markdown 排版。
+            const sysPrompt = `你是 TONY AI 顧問助理。請使用繁體中文。
             這是一個企業戰略診斷系統。使用者可能正在填寫某個階段的資料。
             【當前使用者正在編輯的資料 context】：\n${contextStr}\n
-            請根據使用者的問題給予專業且具啟發性的回答。如果是閒聊，請保持專業禮貌。`;
+            請根據使用者的問題給予簡短、專業且具啟發性的回答。如果是閒聊，請保持專業禮貌。`;
 
             const res = await callGemini(sysPrompt, msg, false);
             document.getElementById(loadingId)?.remove();
@@ -1022,36 +1016,21 @@
         function addChatMessage(text, sender) {
             const messagesArea = document.getElementById('chatbot-messages');
             
-            let formattedText = text;
-            if (sender === 'bot') {
-                try {
-                    // 使用 marked 渲染 Markdown
-                    formattedText = marked.parse(text);
-                } catch(e) {
-                    formattedText = text.replace(/\n/g, '<br>');
-                }
+            let formattedContent = text;
+            if (sender === 'bot' && typeof marked !== 'undefined') {
+                formattedContent = marked.parse(text);
             } else {
-                formattedText = text.replace(/\n/g, '<br>');
+                formattedContent = text.replace(/\n/g, '<br>');
             }
 
-            let html = '';
-            if(sender === 'user') {
-                html = `<div class="flex justify-end"><div class="bg-primary-600 text-white rounded-xl rounded-tr-none p-3 max-w-[85%] leading-relaxed shadow-sm">${formattedText}</div></div>`;
-            } else {
-                // 套用 chatbot-markdown-content CSS 類別讓渲染出來的 HTML 正確排版
-                html = `<div class="flex"><div class="bg-white border border-slate-200 text-slate-800 rounded-xl rounded-tl-none p-3 max-w-[85%] leading-relaxed shadow-sm chatbot-markdown-content">${formattedText}</div></div>`;
-            }
+            let html = sender === 'user' 
+                ? `<div class="flex justify-end"><div class="bg-primary-600 text-white rounded-xl rounded-tr-none p-3 max-w-[85%] leading-relaxed shadow-sm">${formattedContent}</div></div>`
+                : `<div class="flex"><div class="bg-white border border-slate-200 text-slate-800 rounded-xl rounded-tl-none p-3 max-w-[85%] leading-relaxed shadow-sm chatbot-markdown overflow-hidden">${formattedContent}</div></div>`;
             
             messagesArea.insertAdjacentHTML('beforeend', html);
-            
-            // 強制確保滾動到底部，改用 setTimeout 確保大量 Markdown 渲染後高度正確抓取
-            setTimeout(() => {
-                messagesArea.scrollTop = messagesArea.scrollHeight;
-            }, 50);
+            setTimeout(() => { messagesArea.scrollTop = messagesArea.scrollHeight; }, 50);
         }
 
-        window.initTemplates = initTemplates;
-        window.loadTemplate = loadTemplate;
         window.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
