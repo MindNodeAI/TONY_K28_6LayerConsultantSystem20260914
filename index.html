@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>顧問級的企業六層診斷系統 | SMEbig 司馬大顧問</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX for LaTeX Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Marked for Markdown Parsing in Chatbot -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a' },
+                        primary: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        serif: ['"Noto Serif TC"', 'serif'], 
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: #f8fafc; color: #334155; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+        .form-input {
+            width: 100%; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.75rem 1rem;
+            font-size: 0.875rem; color: #1e293b; background-color: #ffffff;
+            transition: all 0.2s ease; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); line-height: 1.5;
+        }
+        .report-preview { 
+            background: white; max-width: 21cm; margin: 0 auto; 
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); padding: 3cm 2.5cm; min-height: 29.7cm; 
+        }
+        .report-title-container { border-bottom: 3px solid #1e3a8a; padding-bottom: 24px; margin-bottom: 40px; }
+        .report-preview h1 { font-family: '"Noto Serif TC"', serif; color: #0f172a; font-size: 32pt; text-align: left; font-weight: 900; margin: 0 0 12px 0; letter-spacing: -0.5px; line-height: 1.2; }
+        .report-preview .meta { text-align: left; color: #64748b; font-size: 10pt; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+        .report-preview .section-container { margin-bottom: 3rem; break-inside: avoid; }
+        .report-preview h2.section-title { font-family: '"Noto Serif TC"', serif; color: #1e3a8a; font-size: 18pt; margin-top: 0; margin-bottom: 1.5rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 0.75rem; font-weight: 700; }
+        .report-preview .field-group { margin-bottom: 1.5rem; }
+        .report-preview .field-label { font-size: 9pt; color: #64748b; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; }
+        .report-preview .field-value { font-size: 11pt; line-height: 1.8; color: #0f172a; white-space: pre-wrap; border-left: 3px solid #94a3b8; padding-left: 1rem; margin: 0; }
+        
+        /* 解決 LaTeX 溢出問題 */
+        .katex-display { overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; }
+
+        /* Chatbot Markdown 樣式優化 */
+        .chatbot-markdown-content { word-break: break-word; }
+        .chatbot-markdown-content p { margin-bottom: 0.5rem; }
+        .chatbot-markdown-content p:last-child { margin-bottom: 0; }
+        .chatbot-markdown-content ul { list-style-type: disc; margin-left: 1.2rem; margin-bottom: 0.5rem; }
+        .chatbot-markdown-content ol { list-style-type: decimal; margin-left: 1.2rem; margin-bottom: 0.5rem; }
+        .chatbot-markdown-content h3, .chatbot-markdown-content h4 { font-weight: 700; color: #1e3a8a; margin-top: 0.75rem; margin-bottom: 0.25rem; }
+        .chatbot-markdown-content strong { color: #1e3a8a; font-weight: 700; }
+    </style>
+</head>
+<body class="h-screen overflow-hidden flex flex-col antialiased selection:bg-primary-200 selection:text-primary-900">
+
+    <header class="bg-slate-900 text-white h-14 flex items-center justify-between px-6 shrink-0 shadow-md z-50 relative">
+        <div class="flex items-center gap-4 cursor-pointer group" onclick="window.navigate('dashboard')">
+            <img src="https://firebasestorage.googleapis.com/v0/b/k16-tony-ai-wisdom-platform.firebasestorage.app/o/assets%2F6av64EOvvqQNAIoXqcPfHC5BBeF3%2F1785039560457_1.png?alt=media&token=19b27497-4101-4436-bc80-b299741b7984" alt="LOGO" class="h-8 object-contain transition-transform group-hover:scale-105">
+            <div class="border-l border-slate-700 pl-4 hidden sm:block">
+                <h1 class="text-[15px] font-semibold tracking-wide">顧問級的企業六層診斷系統</h1>
+                <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Enterprise Edition</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4 sm:gap-6">
+            <div class="flex flex-col items-end justify-center">
+                <div class="flex items-center bg-slate-800 rounded-full border border-slate-700 px-3 sm:px-4 py-1.5 focus-within:border-primary-500 focus-within:bg-slate-900 transition-all shadow-inner">
+                    <i class="fas fa-key text-slate-400 mr-2 sm:mr-3 text-xs"></i>
+                    <input type="password" id="apiKeyInput" placeholder="輸入 Gemini API Key..." 
+                           class="bg-transparent border-none focus:outline-none text-xs w-32 sm:w-48 text-slate-200 placeholder-slate-500">
+                    <button onclick="window.toggleKey()" class="text-slate-400 hover:text-white mx-1 sm:mx-2 transition-colors"><i class="fas fa-eye text-xs" id="keyIcon"></i></button>
+                    <button onclick="window.saveKey()" class="text-primary-400 hover:text-primary-300 text-xs font-bold transition-colors ml-1 sm:ml-2">設定</button>
+                </div>
+                <!-- 修正 API Key 連結對齊 -->
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="self-end text-[10px] text-primary-400 hover:text-primary-300 hover:underline mt-1 mr-3 sm:mr-4 flex items-center gap-1">
+                    <i class="fas fa-external-link-alt"></i> 免費取得金鑰
+                </a>
+            </div>
+
+            <div class="flex items-center gap-4 pl-4 sm:pl-6 border-l border-slate-700">
+                <div id="cloudSyncStatus" class="hidden sm:flex items-center text-[11px] text-slate-300 font-medium tracking-wide">
+                    <!-- Sync status here -->
+                </div>
+                <!-- Google Login Profile Area -->
+                <div id="authProfileArea">
+                    <button onclick="window.loginWithGoogle()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-1.5 px-4 rounded-full flex items-center gap-2 transition-colors">
+                        <i class="fab fa-google"></i> 登入
+                    </button>
+                </div>
+                <button onclick="window.showModal('profileModal')" class="relative group ml-2" title="顧問簡介">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/k16-tony-ai-wisdom-platform.firebasestorage.app/o/assets%2F6av64EOvvqQNAIoXqcPfHC5BBeF3%2F1787580326393_ChatGPT%20Image%202026%E5%B9%B46%E6%9C%8819%E6%97%A5%20%E4%B8%8A%E5%8D%8811_16_14.png?alt=media&token=3c85de41-f36f-46e5-a97a-7bc7eb83a027" 
+                         alt="TONY" class="w-8 h-8 rounded-full border-2 border-slate-600 group-hover:border-primary-400 transition-colors object-cover bg-white">
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 relative flex overflow-hidden bg-slate-50 w-full">
+        <!-- View: Dashboard -->
+        <div id="view-dashboard" class="absolute inset-0 overflow-y-auto p-6 sm:p-10 hidden animate-fade-in z-10 bg-slate-50">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">專案儀表板</h2>
+                        <p class="text-slate-500 text-sm">管理您的商業戰略診斷，自動同步至本地與雲端。</p>
+                    </div>
+                    <div class="flex gap-3 w-full sm:w-auto">
+                        <button onclick="window.showModal('templateModal')" class="flex-1 sm:flex-none justify-center bg-white border border-slate-300 hover:border-primary-400 hover:text-primary-600 text-slate-700 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2">
+                            <i class="fas fa-layer-group"></i> 專案範本庫
+                        </button>
+                        <button onclick="window.createNewProject()" class="flex-1 sm:flex-none justify-center bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-md flex items-center gap-2">
+                            <i class="fas fa-plus"></i> 新增專案
+                        </button>
+                    </div>
+                </div>
+                <div id="projectGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            </div>
+        </div>
+
+        <!-- View: Workspace -->
+        <div id="view-workspace" class="absolute inset-0 flex flex-col md:flex-row hidden animate-fade-in z-20 bg-white">
+            <aside class="w-full md:w-64 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col shrink-0 relative z-10 shadow-sm md:shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+                <div class="p-4 md:p-5 border-b border-slate-200 bg-white md:bg-transparent">
+                    <button onclick="window.navigate('dashboard')" class="text-xs text-slate-500 hover:text-primary-600 mb-3 flex items-center gap-2 transition-colors font-medium">
+                        <i class="fas fa-arrow-left"></i> 返回儀表板
+                    </button>
+                    <input type="text" id="workspaceProjectTitle" 
+                           class="w-full bg-transparent font-bold text-slate-800 text-lg border-b-2 border-transparent hover:border-slate-300 focus:border-primary-500 focus:outline-none transition-colors pb-1 truncate" 
+                           placeholder="輸入專案名稱..."
+                           onchange="window.updateProjectTitle(this.value)">
+                </div>
+                <nav class="flex-1 p-3 space-y-1 overflow-x-auto md:overflow-y-auto flex flex-row md:flex-col" id="sidebarNav"></nav>
+                <div class="p-4 border-t border-slate-200 bg-white hidden md:block">
+                    <button onclick="window.generateAndShowReport()" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-all group">
+                        <i class="fas fa-file-contract text-primary-300 group-hover:scale-110 transition-transform"></i> 產出戰略診斷報告
+                    </button>
+                </div>
+            </aside>
+
+            <section class="flex-1 flex flex-col overflow-y-auto bg-slate-50/50 scroll-smooth relative">
+                <div class="max-w-3xl w-full mx-auto p-6 md:p-10 flex-1" id="dynamicContentArea"></div>
+            </section>
+
+            <aside class="w-full md:w-[340px] bg-white border-t md:border-t-0 md:border-l border-slate-200 flex flex-col shrink-0 shadow-[-4px_0_24px_rgba(0,0,0,0.03)] z-10 h-72 md:h-auto">
+                <div class="p-4 border-b border-slate-200 bg-gradient-to-r from-primary-50 to-white flex flex-col gap-3 shrink-0">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 shadow-inner">
+                                <i class="fas fa-robot text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">AI 戰略教練</h3>
+                                <p class="text-[10px] text-primary-600 font-semibold uppercase tracking-wider">Gemini 3.8 Flash</p>
+                            </div>
+                        </div>
+                        <button onclick="window.generateAndShowReport()" class="md:hidden text-xs bg-slate-800 text-white px-3 py-1.5 rounded flex items-center gap-1 font-semibold">
+                            <i class="fas fa-file-contract"></i> 產出報告
+                        </button>
+                    </div>
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 text-xs text-indigo-800 cursor-help" title="學習如何將爛問題轉化為可執行的好問題。">
+                        <p class="font-bold mb-1.5 flex items-center gap-1.5 text-indigo-700">
+                            <i class="fas fa-lightbulb text-amber-500 text-sm"></i> 《3P 提問法》檢查基準
+                        </p>
+                        <ul class="list-none text-[11px] space-y-1.5 ml-1">
+                            <li class="flex items-start gap-1.5"><span class="bg-indigo-200 text-indigo-800 font-bold px-1 rounded text-[9px] mt-0.5">P1</span><span><strong class="font-semibold text-indigo-700">定位:</strong> 目標與痛點在哪一段？</span></li>
+                            <li class="flex items-start gap-1.5"><span class="bg-indigo-200 text-indigo-800 font-bold px-1 rounded text-[9px] mt-0.5">P2</span><span><strong class="font-semibold text-indigo-700">邊界:</strong> 限制條件為何？(預算/人力)</span></li>
+                            <li class="flex items-start gap-1.5"><span class="bg-indigo-200 text-indigo-800 font-bold px-1 rounded text-[9px] mt-0.5">P3</span><span><strong class="font-semibold text-indigo-700">推進:</strong> 這回合要求AI給什麼方案？</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 bg-slate-50/30 text-sm" id="aiChatArea"></div>
+                <div class="p-4 border-t border-slate-200 bg-white flex flex-col gap-2 shrink-0">
+                    <button id="btnAiAsk" onclick="window.triggerAI('ask')" class="w-full bg-white hover:bg-primary-50 text-primary-700 font-semibold py-2.5 px-3 border border-primary-200 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 text-sm group">
+                        <i class="fas fa-crosshairs text-primary-500 group-hover:scale-110 transition-transform"></i> 顧問深度追問 (挖掘盲點)
+                    </button>
+                    <button onclick="window.triggerAI('check')" class="w-full bg-white hover:bg-rose-50 text-rose-700 font-semibold py-2.5 px-3 border border-rose-200 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 text-sm group">
+                        <i class="fas fa-shield-alt text-rose-500 group-hover:scale-110 transition-transform"></i> 邏輯矛盾與風險檢查
+                    </button>
+                    <div id="aiLoading" class="hidden flex flex-col items-center justify-center py-2">
+                        <i class="fas fa-circle-notch fa-spin text-primary-500 text-lg mb-1"></i>
+                        <span class="text-xs text-slate-500 font-medium">顧問運算中...</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- View: Report -->
+        <div id="view-report" class="absolute inset-0 overflow-y-auto p-6 sm:p-10 hidden animate-fade-in z-30 bg-slate-100">
+            <div class="max-w-[21cm] mx-auto mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden">
+                <button onclick="window.navigate('workspace')" class="text-slate-600 hover:text-slate-900 font-semibold flex items-center gap-2 bg-white px-5 py-2.5 rounded-lg shadow-sm border border-slate-200 transition-colors w-full sm:w-auto justify-center">
+                    <i class="fas fa-arrow-left"></i> 返回編輯
+                </button>
+                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <button onclick="window.generateAndShowReport(true)" id="btnAiRegenerate" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-lg shadow-sm flex items-center justify-center gap-2 text-sm font-bold transition-all">
+                        <i class="fas fa-sync-alt text-primary-500"></i> AI 重新撰寫
+                    </button>
+                    <button onclick="window.exportToWord()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-lg shadow-md flex items-center justify-center gap-2 text-sm font-bold transition-all">
+                        <i class="fas fa-file-word text-blue-300"></i> 下載專業 Word 檔
+                    </button>
+                </div>
+            </div>
+            <div id="reportContent" class="report-preview"></div>
+        </div>
+    </main>
+
+    <!-- Floating Chatbot -->
+    <button id="chatbot-fab" onclick="window.toggleChatbot()" class="fixed bottom-6 right-6 w-14 h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform hover:scale-110 z-[9999]">
+        <i class="fas fa-comment-dots"></i>
+    </button>
+    <div id="chatbot-container" class="hidden fixed w-[350px] h-[500px] bg-white rounded-xl shadow-2xl flex-col z-[9999] overflow-hidden border border-slate-200" style="bottom: 24px; right: 24px;">
+        <div id="chatbot-resize-handle" class="absolute top-0 left-0 w-8 h-8 cursor-nwse-resize z-50 flex items-start justify-start p-1" title="按住此處拖曳縮放">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-white/40"><path d="M0 12L12 0H8L0 8V12Z" fill="currentColor"/><path d="M0 6L6 0H2L0 2V6Z" fill="currentColor"/></svg>
+        </div>
+        <div id="chatbot-header" class="bg-slate-900 text-white p-3 pl-8 flex justify-between items-center cursor-move relative shrink-0">
+            <div class="flex items-center gap-2 font-bold text-sm tracking-wide select-none"><i class="fas fa-robot text-primary-400"></i> TONY AI 顧問助理</div>
+            <div class="flex items-center gap-3 relative z-40">
+                <button onclick="window.changeChatFontSize(-1)" class="hover:text-primary-300 transition-colors"><i class="fas fa-minus text-xs"></i></button>
+                <button onclick="window.changeChatFontSize(1)" class="hover:text-primary-300 transition-colors"><i class="fas fa-plus text-xs"></i></button>
+                <div class="w-px h-4 bg-slate-600 mx-1"></div>
+                <button onclick="window.toggleChatbot()" class="hover:text-primary-300 transition-colors"><i class="fas fa-window-minimize mb-1"></i></button>
+                <button onclick="window.toggleChatbot()" class="hover:text-rose-400 transition-colors"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <div id="chatbot-messages" class="flex-1 p-4 overflow-y-auto bg-slate-50 text-[14px] space-y-4">
+            <div class="flex"><div class="bg-white border border-slate-200 text-slate-800 rounded-xl rounded-tl-none p-3 max-w-[85%] leading-relaxed shadow-sm">您好！我是 TONY AI 顧問助理。<br>請問有什麼戰略或操作上的問題需要協助嗎？</div></div>
+        </div>
+        <div class="p-3 bg-white border-t border-slate-200 flex gap-2 shrink-0">
+            <input type="text" id="chatbot-input" class="flex-1 bg-slate-100 border border-transparent rounded-full px-4 py-2 text-sm focus:bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all" placeholder="輸入訊息..." onkeypress="if(event.key === 'Enter') window.sendChatbotMessage()">
+            <button onclick="window.sendChatbotMessage()" class="w-10 h-10 bg-primary-600 hover:bg-primary-700 text-white rounded-full flex items-center justify-center transition-colors shrink-0 shadow-sm"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Modals & Overlays -->
+    <div id="reportLoadingOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] hidden flex-col items-center justify-center animate-fade-in">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-full mx-4 text-center">
+            <i class="fas fa-circle-notch fa-spin text-primary-600 text-4xl mb-4"></i>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">AI 顧問撰寫報告中</h3>
+            <p class="text-sm text-slate-500">正在揉合您的六層資料，並渲染量化模型，請稍候...</p>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-slate-200 py-2 sm:py-3 text-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-50 relative">
+        <p class="text-[10px] sm:text-[11px] text-slate-400 font-semibold uppercase tracking-widest px-4">
+            © 2026 SMEbig 司馬大顧問 & 智策慧品牌顧問有限公司. All Rights Reserved.
+        </p>
+    </footer>
+
+    <div id="customAlert" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[300] hidden">
+        <div id="customAlertContent" class="bg-white border-l-4 rounded-lg shadow-2xl p-4 flex items-center gap-3 min-w-[300px]">
+            <i id="customAlertIcon" class="text-xl"></i>
+            <span id="customAlertText" class="text-sm font-semibold text-slate-700"></span>
+        </div>
+    </div>
+
+    <!-- UI Fix: Separated Profile Header and Scrollable Content -->
+    <div id="profileModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden animate-fade-in p-4" onclick="if(event.target===this) window.hideModal('profileModal')">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all animate-slide-up flex flex-col max-h-[90vh] relative pt-16 mt-16">
+            <!-- Avatar moved OUTSIDE overflow container to prevent clipping -->
+            <div class="absolute -top-16 left-1/2 transform -translate-x-1/2 z-20">
+                <img src="https://firebasestorage.googleapis.com/v0/b/k16-tony-ai-wisdom-platform.firebasestorage.app/o/assets%2F6av64EOvvqQNAIoXqcPfHC5BBeF3%2F1787580326393_ChatGPT%20Image%202026%E5%B9%B46%E6%9C%8819%E6%97%A5%20%E4%B8%8A%E5%8D%8811_16_14.png?alt=media&token=3c85de41-f36f-46e5-a97a-7bc7eb83a027" 
+                     alt="TONY 楊文澤顧問" class="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover bg-white">
+            </div>
+            
+            <button onclick="window.hideModal('profileModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors z-30"><i class="fas fa-times text-xl"></i></button>
+            
+            <div class="px-8 pb-8 flex-1 overflow-y-auto">
+                <div class="pt-16 text-center">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2 tracking-tight">TONY 楊文澤顧問</h2>
+                    <div class="flex flex-wrap justify-center gap-2 text-primary-600 text-[13px] font-bold mb-8">
+                        <span>資深數位行銷科技顧問</span>
+                        <span class="text-slate-300">|</span>
+                        <span>生成式 AI 創作者</span>
+                        <span class="text-slate-300">|</span>
+                        <span>創業導師</span>
+                    </div>
+                    
+                    <div class="space-y-6 text-sm text-slate-600 text-left">
+                        <div>
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2 mb-3"><i class="fas fa-briefcase text-primary-500 w-5 text-center"></i> 現職</h3>
+                            <!-- 修正縮排寫法：使用 list-outside 與 ml-5 避免文字換行折回項目符號下方 -->
+                            <ul class="list-disc list-outside ml-5 space-y-2 text-[13px]">
+                                <li class="leading-relaxed">龍華科大 數位行銷講師</li>
+                                <li class="leading-relaxed">智策慧 品牌行銷科技顧問</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2 mb-3"><i class="fas fa-history text-primary-500 w-5 text-center"></i> 經歷</h3>
+                            <ul class="list-disc list-outside ml-5 space-y-2 text-[13px]">
+                                <li class="leading-relaxed">脈動心聯股份有限公司 創辦人暨執行長</li>
+                                <li class="leading-relaxed">宏碁集團建碁 AOPEN 整合營銷處處長 / 全球品牌行銷總監 / 企業發言人</li>
+                                <li class="leading-relaxed">台灣數位看板多媒體聯盟 (DSMA) 副會長</li>
+                            </ul>
+                        </div>
+                         <div>
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2 mb-3"><i class="fas fa-graduation-cap text-primary-500 w-5 text-center"></i> 學歷</h3>
+                            <ul class="list-disc list-outside ml-5 space-y-2 text-[13px]">
+                                <li class="leading-relaxed">台大 EMBA 商學組</li>
+                                <li class="leading-relaxed">美國 Arizona State University 互動多媒體設計</li>
+                                <li class="leading-relaxed">北科大 工業設計</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2 mb-3"><i class="fas fa-chalkboard-teacher text-primary-500 w-5 text-center"></i> 專家授課經歷</h3>
+                            <ul class="list-disc list-outside ml-5 space-y-2 text-[13px]">
+                                <li class="leading-relaxed">CPC 生產力中心 經營管理顧問師班 講師</li>
+                                <li class="leading-relaxed">台大 / 長榮 / 政大 / 世新 EMBA 業師</li>
+                                <li class="leading-relaxed">2025 新光人壽 AI 工具應用 企業內訓講師</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="templateModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden animate-fade-in" onclick="if(event.target===this) window.hideModal('templateModal')">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full p-6 sm:p-8 max-h-[90vh] flex flex-col mx-4 animate-slide-up">
+            <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4 shrink-0">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-800 flex items-center"><i class="fas fa-layer-group text-primary-500 mr-3"></i> 3P 戰略情境範本庫</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1">導入《3P 提問法》框架：已定義現況 (P1)，但刻意保留邊界限制 (P2) 讓您練習補齊。</p>
+                </div>
+                <button onclick="window.hideModal('templateModal')" class="text-slate-400 hover:text-slate-600 transition-colors"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-2 pb-2" id="templateListArea"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDTSfcjoo5Aiv4EsnMTZ28fFah1Y56WnUg",
+            authDomain: "k28-the-sixlayer-consultmethod.firebaseapp.com",
+            projectId: "k28-the-sixlayer-consultmethod",
+            storageBucket: "k28-the-sixlayer-consultmethod.firebasestorage.app",
+            messagingSenderId: "162034350811",
+            appId: "1:162034350811:web:70f1fb1802d4970d7baafe",
+            measurementId: "G-49B2GMT3E7"
+        };
+
+        let app, db, auth, currentUid = null, isOnline = false, currentUser = null;
+        const LOCAL_STORAGE_KEY = 'sixLayerEnterprise_v10';
+        let appState = { apiKey: '', projects: {}, currentProjectId: null, currentStageId: 'problem' };
+        let chatFontSize = 14;
+
+        const DIAGNOSIS_STAGES = [
+            {
+                id: 'problem', title: '01 核心問題 Problem', icon: 'fa-bullseye',
+                guide: { why: '企業最昂貴的浪費，就是完美地解決了錯誤的問題。', what: '精煉出真正的核心問題，並界定急迫性。', how: '運用《3P 提問法》找出痛點並確認邊界。' },
+                fields: [
+                    { id: 'phenomenon', label: '觀察到的現象 (Phenomenon)', type: 'textarea', placeholder: '您目前觀察到了什麼具體的失敗現象？' },
+                    { id: 'realProblem', label: '真正的問題 (Core Problem)', type: 'textarea', placeholder: '導致上述現象的根本結構性原因是什麼？' },
+                    { id: 'impactTarget', label: '影響的對象與範圍', type: 'text', placeholder: '這個問題嚴重影響了哪些部門？' },
+                    { id: 'urgency', label: '急迫性原因 (Urgency)', type: 'textarea', placeholder: '如果現在不解決，會立刻引發什麼災難？底線在哪？', hint: '找出壓垮駱駝的最後一根稻草。' }
+                ]
+            },
+            {
+                id: 'people', title: '02 利害關係 People', icon: 'fa-users-cog',
+                guide: { why: '忽略任何一個關鍵角色，專案隨時可能被推翻。', what: '畫出決策地圖：誰用？誰買？誰反對？', how: '分析每個角色的切身利益與KPI。' },
+                fields: [
+                    { id: 'user', label: '實際使用者 (User)', type: 'textarea', placeholder: '誰每天要實際操作這個系統？' },
+                    { id: 'buyer', label: '預算持有者 (Buyer)', type: 'textarea', placeholder: '誰為這個專案出錢？' },
+                    { id: 'decisionMaker', label: '最終決策者 (Decision Maker)', type: 'textarea', placeholder: '誰有最終的生殺大權？' },
+                    { id: 'resistance', label: '推行阻力', type: 'textarea', placeholder: '誰可能因為這個方案受害而暗中阻擋？' }
+                ]
+            },
+            {
+                id: 'value', title: '03 商業價值 Value', icon: 'fa-chart-line',
+                guide: { why: '老闆只關心這能為公司賺多少錢、省多少成本。', what: '定義具體的商業價值主張與目標。', how: '將功能翻譯成增加營收、降低成本等價值。' },
+                fields: [
+                    { id: 'mainValue', label: '核心價值主張', type: 'textarea', placeholder: '這個方案能帶來什麼終極商業價值？' },
+                    { id: 'valueType', label: '價值分類', type: 'select', options: ['增加營收', '降低成本', '加快流程', '避免風險'] },
+                    { id: 'baseline', label: '目前基準值 (Baseline)', type: 'text', placeholder: '改善前的具體數據為何？' },
+                    { id: 'target', label: '預期目標值 (Target)', type: 'text', placeholder: '預期交付的具體數據為何？' }
+                ]
+            },
+            {
+                id: 'difference', title: '04 競爭差異 Difference', icon: 'fa-chess-knight',
+                guide: { why: '如果做法差不多，客戶不願意承受轉換痛苦。', what: '找出無法被抄襲的關鍵差異。', how: '誠實評估如果不改變會怎樣。' },
+                fields: [
+                    { id: 'alternative', label: '目前的替代方案 (Alternative)', type: 'textarea', placeholder: '客戶現在是怎麼解決這問題的？' },
+                    { id: 'keyDiff', label: '我們的護城河 (Key Difference)', type: 'textarea', placeholder: '我們最大的不同在哪？' },
+                    { id: 'costOfInaction', label: '維持現狀的代價 (Cost of Inaction)', type: 'textarea', placeholder: '如果決策者說明年再看看，會面臨什麼災難？' }
+                ]
+            },
+            {
+                id: 'evidence', title: '05 事實證據 Evidence', icon: 'fa-search-dollar',
+                guide: { why: '把幻想當作事實是專案失敗的主因。', what: '區分已知事實與美好假設。', how: '要求數據。沒有佐證的都是假設。' },
+                fields: [
+                    { id: 'facts', label: '客觀事實 (Facts)', type: 'textarea', placeholder: '哪些是已經被數據證明的事實？' },
+                    { id: 'assumptions', label: '主觀假設 (Assumptions)', type: 'textarea', placeholder: '我們相信但還沒被證實的假設是什麼？' },
+                    { id: 'unknowns', label: '關鍵未知 (Unknowns)', type: 'textarea', placeholder: '哪些未知變數可能會摧毀專案？' }
+                ]
+            },
+            {
+                id: 'action', title: '06 行動驗證 Action', icon: 'fa-rocket',
+                guide: { why: '不要在沒有驗證的情況下投入大量資源。', what: '設計最低成本的驗證實驗。', how: '確立明確的成功指標與期限。' },
+                fields: [
+                    { id: 'biggestRisk', label: '最大風險假設', type: 'textarea', placeholder: '哪個假設錯了專案就會失敗？' },
+                    { id: 'mvpTest', label: 'MVP 最小驗證實驗', type: 'textarea', placeholder: '如何用最快的方式驗證這個風險？' },
+                    { id: 'metrics', label: '驗證成功指標 (Metrics)', type: 'text', placeholder: '看到什麼具體數據才啟動專案？' },
+                    { id: 'ownerAndTimeline', label: '負責人與期限 (Owner & ETA)', type: 'text', placeholder: '誰負責執行？死線是何時？' }
+                ]
+            }
+        ];
+
+        const TEMPLATES = [
+            {
+                title: "企業內部 AI 知識庫導入", desc: "【P1 明確】點出新人痛點。【P2 缺失】刻意未提及 AI 導入預算與 IT 人力配置限制，讓 AI 抓出盲點。",
+                data: { problem: { phenomenon: "【現況與痛點 (P1)】新人報到平均需 30 天才能獨立作業。跨部門找一份結案報告平均需耗時 2 小時，極度依賴資深員工口耳相傳。", realProblem: "內部知識散落在 OneDrive、Google Drive 與無數的 Line 群組，缺乏單一且具備語意理解的檢索入口。", impactTarget: "新進員工、各部門 PM、以及不斷被打擾的資深主管。", urgency: "【刻意漏掉時間與預算底線 (P2)】公司 Q4 預計再招募 30 人，如果不解決，資深員工會花太多時間帶新人而影響本業產能。" }, people: { user: "全體員工，尤其是新人。痛點：不敢一直問問題怕被罵，只好自己瞎摸索。", buyer: "HR 總監。KPI：降低新人離職率與加速 Onboarding 時間。", decisionMaker: "總經理。只在乎這能不能幫公司省錢或提升人均產值。", resistance: "1. 資深工程師：不想花時間把腦中的經驗寫成 SOP。\n2. IT 資訊部：強烈擔憂 AI 會把公司的機密資料洩漏，抗拒導入。" }, value: { mainValue: "打造企業大腦，讓找資料從 2 小時縮短到 10 秒，釋放資深人才產能。", valueType: "加快流程", baseline: "新人獨立 30 天；找資料 2 小時", target: "新人獨立 14 天；找資料 10 秒" }, difference: { alternative: "1. 繼續用人工問答。\n2. 找工讀生重新整理 SharePoint 的資料夾架構。", keyDiff: "員工可以用自然語言提問，AI 直接給出「總結答案」並附上「來源連結」，不必點開 50 頁 PDF 慢慢看。", costOfInaction: "規模擴張的溝通成本將壓垮團隊，核心技術人員會因為太累而離職。" }, evidence: { facts: "1. 員工滿意度調查指出「找資料太難」是前三大痛點。\n2. 雲端硬碟盤點有 5000 份未結構化文件。", assumptions: "假設系統建好後，員工就會改變習慣去問 AI，而不是直接轉頭問隔壁同事。", unknowns: "舊有的文件內容是否正確？AI 會不會根據過期資料給出錯誤指引？" }, action: { biggestRisk: "行為慣性：系統建好但沒人登入使用。", mvpTest: "先把「HR 出勤與報帳規定」餵給自訂的 GPTs，讓下週報到的 5 位新人進行兩週封閉測試。", metrics: "新人在行政問題上自主解決率 > 80%", ownerAndTimeline: "HR 訓練副理，下週一" } }
+            },
+            {
+                title: "電商網站結帳轉換率優化", desc: "【P1 明確】點出掉單現象。【P2 缺失】刻意未提及工程團隊本月剩餘的開發工時。",
+                data: { problem: { phenomenon: "【現況與痛點 (P1)】GA 數據顯示，高達 70% 的使用者在購物車點擊「結帳」後，卡在「會員註冊/登入」頁面跳出。", realProblem: "結帳流程設計以「收集完整客戶個資」為導向，填寫欄位高達 12 項，產生極大摩擦力。", impactTarget: "終端消費者、電商營運部、行銷部。", urgency: "【刻意漏掉開發資源限制 (P2)】下個月即將迎來大促銷，廣告 CPA 已經逼近毛利邊緣，必須馬上改善轉換率。" }, people: { user: "用手機購物的消費者。痛點：在小螢幕上打字輸入地址和密碼非常痛苦。", buyer: "電商營運總監。KPI：整體網站的 GMV (交易額)。", decisionMaker: "公司老闆。", resistance: "CRM 部門與行銷部：強烈堅持需要消費者填寫完整的生日、性別與 Email，才能發送 EDM 進行再行銷，反對簡化。" }, value: { mainValue: "實現無阻礙的一鍵結帳體驗，將現有廣告流量變現效率極大化。", valueType: "增加營收", baseline: "結帳階段跳出率 70%", target: "結帳階段跳出率降至 40%" }, difference: { alternative: "增加再行銷廣告(Retargeting)預算去追回未結帳客戶。", keyDiff: "從源頭減少摩擦：導入 Apple Pay / LINE 一鍵無痕結帳，連密碼都不用打。", costOfInaction: "在流量紅利消失的現在，廣告 ROI 將持續惡化，雙 11 的營收目標確定無法達成。" }, evidence: { facts: "根據 Hotjar 錄影，多數跳出發生在「設定密碼」與「確認密碼」欄位。", assumptions: "假設開放「無痕結帳」不會嚴重影響長期的客戶終身價值 (LTV)。", unknowns: "不強制註冊會員，對 6 個月內回購率的具體衝擊到底有多大？" }, action: { biggestRisk: "開放無痕結帳後，因無法觸及舊客，導致半年後整體回購營收崩盤。", mvpTest: "A/B 測試：將本週 50% 的流量導向「支援 LINE 快速登入」的結帳頁面，追蹤一週轉換率差異。", metrics: "實驗組的結帳完成率需高出對照組至少 15%，且客單價未降。", ownerAndTimeline: "電商 PM，本週三上線" } }
+            },
+            {
+                title: "傳統製造業無紙化產線", desc: "【P1 明確】點出良率與手抄痛點。【P2 缺失】未說明可動用的硬體採購預算上限。",
+                data: { problem: { phenomenon: "【現況與痛點 (P1)】良率異常往往到下午盤點或隔天早上看報表才發現。手抄容易寫錯，導致大批不良品流到下一站。", realProblem: "生產資訊流發生實體斷層，缺乏即時回饋與機台預警機制。現場還是靠紙本傳遞。", impactTarget: "產線領班、作業員、品保部。", urgency: "【刻意漏掉硬體預算 (P2)】歐美最大客戶要求今年底必須導入即時生產履歷，否則將從供應商名單中剔除，影響 30% 訂單。" }, people: { user: "高齡作業員。痛點：戴著手套很難按小按鈕，抗拒改變幾十年的習慣。", buyer: "廠長。KPI：稼動率與生產良率。", decisionMaker: "集團董事長。", resistance: "產線作業員：認為用系統回報會拖慢生產速度，影響計件獎金。" }, value: { mainValue: "生產數據秒級上雲，建構即時品質預警防線，確保符合大客戶的稽核標準。", valueType: "避免風險", baseline: "數據延遲時間 4-8 小時", target: "數據延遲時間 5 分鐘內" }, difference: { alternative: "增派兩名專職助理，每小時定時巡線收集紙本報表並手動輸入 ERP。", keyDiff: "資料不落地：透過 IoT 直連機台，加上極簡工業級平板讓作業員只需按「正常/異常」一鍵回報。", costOfInaction: "無法通過大客戶年底稽核，直接掉單，工廠面臨裁員危機。" }, evidence: { facts: "上個月因為延遲 4 小時才發現溫度異常，導致報廢成本高達 50 萬。", assumptions: "假設高齡作業員經過半天的訓練後，能夠適應平板介面且不作假。", unknowns: "廠房角落的 Wi-Fi 訊號是否穩定？斷線會否導致產線停擺？" }, action: { biggestRisk: "作業員強烈抗拒或頻繁按錯，導致收集到錯誤數據拖垮產能。", mvpTest: "先買 2 台防摔平板，在 A 產線安裝，設計只有兩個超大按鈕的極簡介面進行一週試運轉。", metrics: "數據回報達成率 100%，且產量未降。", ownerAndTimeline: "專案室主任，下週一" } }
+            },
+            {
+                title: "SaaS 產品流失率挽救", desc: "【P1 明確】訂閱客戶流失嚴重。【P2 缺失】未指明挽救活動的行銷預算上限。",
+                data: { problem: { phenomenon: "【現況與痛點 (P1)】B2B 雲端軟體新客戶在第一個月試用期結束後，續訂率 (Retention Rate) 跌破 20%。", realProblem: "產品缺乏自動化的新手引導。客戶註冊後面對空白儀表板不知道第一步該做什麼，覺得太難用而放棄。", impactTarget: "Customer Success 團隊、Growth 團隊。", urgency: "獲客成本(CAC) 已飆高，如果續訂率不拉上來，公司現金流撐不過接下來的半年。" }, people: { user: "客戶端主管。痛點：沒時間看冗長的使用手冊，想要一登入就能看到價值。", buyer: "客戶端部門經理。若試用期沒看到成效就不會請購。", decisionMaker: "我方營運長 (COO)。", resistance: "產品開發部 (RD)：認為是「行銷沒找對客戶」，不願停下手邊新功能去優化舊註冊流程。" }, value: { mainValue: "打造沉浸式新手引導體驗，讓客戶在註冊 5 分鐘內感受到產品的「驚嘆時刻 (Aha Moment)」。", valueType: "增加營收", baseline: "試用期後續訂率 20%", target: "試用期後續訂率提升至 40%" }, difference: { alternative: "錄製一堆長達 30 分鐘的教學影片叫客戶看。", keyDiff: "內建於產品中的互動式導覽 (In-App Tooltips)，帶著客戶點擊完成第一個專案，立即產生價值。", costOfInaction: "陷入「漏水水桶」效應，燒光行銷預算卻留不住人，最終資金斷裂。" }, evidence: { facts: "後台數據顯示，80% 放棄的客戶連「建立第一個專案」的按鈕都沒按過。", assumptions: "假設客戶只要完成第一步引導，他們就會覺得有價值而留下。", unknowns: "如果是因為產品定價比競品太貴，導覽做得再好他們還是不會買單？" }, action: { biggestRisk: "花了一個月開發導覽，結果客戶根本不想點，直接按『跳過』。", mvpTest: "用 Figma 畫出 3 張帶有假導覽圖示的介面，邀請 5 位剛註冊客戶進行 Zoom 訪談觀察點擊意願。", metrics: "超過 4 位客戶表示「這樣我就知道該做什麼了」。", ownerAndTimeline: "UI/UX 設計師，本週五前" } }
+            },
+            {
+                title: "實體零售門市 O2O 轉型", desc: "【P1 明確】門市業績下滑。【P2 缺失】未提及開發會員 App 的時程壓力與預算底線。",
+                data: { problem: { phenomenon: "【現況與痛點 (P1)】連鎖門市近一年客流減少 30%，年輕客群流失。線上粉絲無法導流到實體消費。", realProblem: "線上與線下會員系統沒有打通。門市無法識別線上粉絲，線上也發不了門市定位優惠券，形成 O2O 斷鏈。", impactTarget: "門市店長與店員、品牌行銷部。", urgency: "競爭對手已推出掃碼集點與線上預購門市取貨的服務，我們不能再落後了。" }, people: { user: "消費者與門市店員。痛點：結帳要快，操作不能太複雜。", buyer: "行銷總監與營業總監。", decisionMaker: "集團總裁。", resistance: "門市店長：強烈抗拒，認為推廣線上 App 會把自己的業績「洗到線上」，導致獎金減少。" }, value: { mainValue: "打通全通路數據，實現「線上發券、線下核銷」，把過客變熟客。", valueType: "增加營收", baseline: "線上線下轉換率 0%", target: "線上優惠券核銷率 10%" }, difference: { alternative: "繼續印實體紙本宣傳單 (DM) 塞信箱。", keyDiff: "建立以 LINE OA 為核心的輕量系統，免下載 App，三秒鐘掃碼綁定會員領優惠。", costOfInaction: "失去與年輕世代溝通管道，淪為老化品牌，最終面臨關店潮。" }, evidence: { facts: "問卷顯示，70% 客人表示不願意為了一個品牌下載專屬 App。", assumptions: "假設只要發放高額首購券，年輕人就願意在結帳時花 3 秒掃碼加 LINE。", unknowns: "現有 POS 系統老舊，是否能順利串接 LINE API 進行即時核銷？" }, action: { biggestRisk: "店長因擔心業績被搶，根本不向客人推廣掃碼。", mvpTest: "找一家示範店，由總公司派人駐點三天，拿平板在門口邀客人加 LINE 送咖啡，測試實際轉換率。", metrics: "單日成功加好友並核銷咖啡券的轉換率 > 20%。", ownerAndTimeline: "行銷部副理，下週五前" } }
+            }
+        ];
+
+        window.showToast = function(msg, type = 'success') {
+            const el = document.getElementById('customAlert');
+            const icon = document.getElementById('customAlertIcon');
+            const text = document.getElementById('customAlertText');
+            let color = type === 'error' ? 'border-rose-500 text-rose-700' : 'border-green-500 text-green-700';
+            let ic = type === 'error' ? 'fa-exclamation-circle text-rose-500' : 'fa-check-circle text-green-500';
+            document.getElementById('customAlertContent').className = `bg-white border-l-4 rounded-lg shadow-xl p-4 flex items-center gap-3 min-w-[300px] animate-slide-up ${color}`;
+            icon.className = `fas ${ic} text-xl`;
+            text.textContent = msg;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 3500);
+        };
+        window.showModal = function(id) { document.getElementById(id).classList.remove('hidden'); };
+        window.hideModal = function(id) { document.getElementById(id).classList.add('hidden'); };
+
+        async function initApp() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                window.loginWithGoogle = async function() {
+                    const provider = new GoogleAuthProvider();
+                    try {
+                        await signInWithPopup(auth, provider);
+                        window.showToast('Google 帳號登入成功！');
+                    } catch(e) { window.showToast('登入失敗', 'error'); }
+                };
+
+                window.logoutGoogle = async function() {
+                    await signOut(auth);
+                    window.showToast('已登出，重置為本地模式');
+                    setTimeout(() => location.reload(), 1000);
+                };
+
+                onAuthStateChanged(auth, async (user) => {
+                    const authArea = document.getElementById('authProfileArea');
+                    if (user && !user.isAnonymous) {
+                        currentUser = user;
+                        currentUid = user.uid; 
+                        isOnline = true; 
+                        updateSyncUI(true); 
+                        authArea.innerHTML = `
+                            <div class="flex items-center gap-2 cursor-pointer group relative" onclick="window.logoutGoogle()" title="點擊登出">
+                                <img src="${user.photoURL}" class="w-6 h-6 rounded-full border border-slate-500 group-hover:border-rose-400 transition-colors">
+                                <span class="text-xs text-slate-300 font-medium group-hover:text-rose-400 transition-colors truncate max-w-[80px]">${user.displayName}</span>
+                            </div>
+                        `;
+                        await loadFromCloud();
+                    } else {
+                        currentUid = user ? user.uid : null;
+                        currentUser = null;
+                        isOnline = false;
+                        updateSyncUI(false);
+                        authArea.innerHTML = `
+                            <button onclick="window.loginWithGoogle()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-1.5 px-4 rounded-full flex items-center gap-2 transition-colors">
+                                <i class="fab fa-google"></i> 登入
+                            </button>
+                        `;
+                        if (!user) signInAnonymously(auth).catch(e => console.error(e));
+                    }
+                });
+            } catch (e) { isOnline = false; updateSyncUI(false); }
+
+            loadFromLocal();
+            initTemplates();
+            if (Object.keys(appState.projects).length === 0) window.createNewProject();
+            else { renderDashboard(); window.navigate('dashboard'); }
+            
+            initChatbotDragAndResize();
+        }
+
+        window.navigate = function(viewId) {
+            ['dashboard', 'workspace', 'report'].forEach(id => document.getElementById(`view-${id}`).classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            if(viewId === 'dashboard') renderDashboard();
+        };
+
+        function updateSyncUI(online, saving = false) {
+            const el = document.getElementById('cloudSyncStatus');
+            if (!el) return;
+            if(!online) el.innerHTML = '<i class="fas fa-cloud-offline text-slate-400 mr-1.5"></i> 本地模式';
+            else if (saving) el.innerHTML = '<i class="fas fa-spinner fa-spin text-primary-500 mr-1.5"></i> 同步中';
+            else el.innerHTML = '<i class="fas fa-cloud text-green-500 mr-1.5"></i> 已同步';
+        }
+
+        function generateId() { return 'proj_' + Math.random().toString(36).substring(2, 9) + Date.now(); }
+
+        window.createNewProject = function(templateData = null, title = "未命名戰略專案") {
+            const id = generateId();
+            const emptyData = DIAGNOSIS_STAGES.reduce((acc, stage) => {
+                acc[stage.id] = stage.fields.reduce((fAcc, field) => ({...fAcc, [field.id]: ''}), {});
+                return acc;
+            }, {});
+            appState.projects[id] = { id: id, title: title, data: templateData ? JSON.parse(JSON.stringify(templateData)) : emptyData, updatedAt: Date.now() };
+            saveToLocal(); window.openProject(id);
+        };
+
+        window.openProject = function(id) {
+            if(appState.projects[id]) {
+                appState.currentProjectId = id;
+                appState.currentStageId = 'problem';
+                document.getElementById('workspaceProjectTitle').value = appState.projects[id].title;
+                renderSidebar(); renderStage(); window.navigate('workspace');
+            }
+        };
+
+        window.updateProjectTitle = function(val) {
+            if(appState.currentProjectId && appState.projects[appState.currentProjectId]) {
+                appState.projects[appState.currentProjectId].title = val || "未命名";
+                appState.projects[appState.currentProjectId].updatedAt = Date.now();
+                saveToLocal(); debouncedCloudSave(appState.currentProjectId);
+            }
+        };
+
+        window.handleInput = function(stageId, fieldId, value) {
+            const pid = appState.currentProjectId;
+            if(!pid) return;
+            appState.projects[pid].data[stageId][fieldId] = value;
+            appState.projects[pid].updatedAt = Date.now();
+            saveToLocal(); debouncedCloudSave(pid);
+        };
+
+        function saveToLocal() { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ projects: appState.projects })); }
+        function loadFromLocal() {
+            const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (saved) { try { appState.projects = JSON.parse(saved).projects || {}; } catch(e){} }
+        }
+
+        let saveTimeout = null;
+        function debouncedCloudSave(pid) {
+            if(!isOnline || !currentUser || !db) return;
+            clearTimeout(saveTimeout);
+            updateSyncUI(true, true);
+            saveTimeout = setTimeout(async () => {
+                try {
+                    await setDoc(doc(db, 'artifacts', 'k28-the-sixlayer', 'users', currentUser.uid, 'projects', pid), appState.projects[pid], { merge: true });
+                    updateSyncUI(true, false);
+                } catch(e) { updateSyncUI(false); }
+            }, 1500);
+        }
+
+        async function loadFromCloud() {
+            if(!isOnline || !currentUser || !db) return;
+            try {
+                const snap = await getDocs(collection(db, 'artifacts', 'k28-the-sixlayer', 'users', currentUser.uid, 'projects'));
+                snap.forEach(d => {
+                    const cloudData = d.data();
+                    if(!appState.projects[d.id] || cloudData.updatedAt > appState.projects[d.id].updatedAt) { appState.projects[d.id] = cloudData; }
+                });
+                saveToLocal(); if(!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
+            } catch(e){}
+        }
+
+        window.deleteProjectDirectly = function(id) {
+            delete appState.projects[id]; saveToLocal();
+            if(isOnline && currentUser && db) { try { deleteDoc(doc(db, 'artifacts', 'k28-the-sixlayer', 'users', currentUser.uid, 'projects', id)); } catch(e){} }
+            window.showToast('專案已刪除'); renderDashboard();
+        };
+
+        function renderDashboard() {
+            const grid = document.getElementById('projectGrid');
+            const projs = Object.values(appState.projects).sort((a,b) => b.updatedAt - a.updatedAt);
+            if(projs.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-16 text-slate-400 bg-white rounded-xl border border-dashed border-slate-300">目前沒有專案，點擊右上角新增。</div>`;
+                return;
+            }
+            grid.innerHTML = projs.map(p => `
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-md border border-slate-200 p-6 transition-all group relative cursor-pointer" onclick="window.openProject('${p.id}')">
+                    <button onclick="event.stopPropagation(); window.deleteProjectDirectly('${p.id}')" class="absolute top-4 right-4 text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"><i class="fas fa-trash-alt"></i></button>
+                    <div class="w-12 h-12 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600 mb-5"><i class="fas fa-briefcase text-xl"></i></div>
+                    <h3 class="font-bold text-slate-800 text-lg mb-2 truncate">${p.title}</h3>
+                    <p class="text-xs text-slate-400 font-medium">更新於: ${new Date(p.updatedAt).toLocaleDateString('zh-TW', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</p>
+                </div>`).join('');
+        }
+
+        function renderSidebar() {
+            document.getElementById('sidebarNav').innerHTML = DIAGNOSIS_STAGES.map(s => {
+                const isActive = appState.currentStageId === s.id;
+                return `
+                <button onclick="window.switchStage('${s.id}')" 
+                    class="w-full text-left px-4 py-3 rounded-lg md:mb-1.5 text-sm font-semibold transition-all flex items-center gap-3 shrink-0 md:shrink
+                    ${isActive ? 'bg-primary-50 text-primary-700 shadow-sm border border-primary-100' : 'text-slate-600 hover:bg-slate-100 border border-transparent'}">
+                    <i class="fas ${s.icon} w-5 text-center ${isActive ? 'text-primary-600' : 'text-slate-400'}"></i>
+                    <span class="whitespace-nowrap">${s.title}</span>
+                </button>`;
+            }).join('');
+        }
+
+        window.switchStage = function(id) {
+            appState.currentStageId = id; renderSidebar(); renderStage();
+            const stage = DIAGNOSIS_STAGES.find(x=>x.id===id);
+            document.getElementById('aiChatArea').innerHTML = `
+                <div class="bg-white rounded-lg p-3 text-sm text-slate-700 border border-slate-200 shadow-sm">
+                    <p class="mb-1 font-bold text-primary-800 flex items-center gap-2"><i class="fas fa-magic text-primary-500"></i> AI 戰略模式啟動</p>
+                    <p class="text-[11px] leading-relaxed text-slate-500">已切換至「${stage.title}」視角。請填寫左側欄位後，進行深度檢查。</p>
+                </div>`;
+        };
+
+        function renderStage() {
+            const container = document.getElementById('dynamicContentArea');
+            const stage = DIAGNOSIS_STAGES.find(s => s.id === appState.currentStageId);
+            const data = appState.projects[appState.currentProjectId].data[stage.id] || {};
+
+            let html = `
+                <div class="mb-6 md:mb-8 animate-fade-in">
+                    <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-8 flex items-center gap-4">
+                        <i class="fas ${stage.icon} text-primary-600 bg-primary-50 p-3 rounded-2xl shadow-sm border border-primary-100"></i> ${stage.title}
+                    </h2>
+                </div>
+                <div class="space-y-6 animate-slide-up pb-10">`;
+
+            stage.fields.forEach(f => {
+                const val = data[f.id] || '';
+                html += `
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm focus-within:border-primary-400 focus-within:shadow-md transition-all group">
+                        <label class="block text-sm font-bold text-slate-800 mb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                            <span class="text-base">${f.label}</span>
+                            ${f.hint ? `<span class="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 font-medium"><i class="fas fa-bolt"></i> ${f.hint}</span>` : ''}
+                        </label>
+                        ${f.type === 'textarea' 
+                            ? `<textarea rows="4" class="form-input resize-y text-sm leading-relaxed" placeholder="${f.placeholder}" oninput="window.handleInput('${stage.id}', '${f.id}', this.value)">${val}</textarea>`
+                            : f.type === 'select'
+                            ? `<select class="form-input text-sm" onchange="window.handleInput('${stage.id}', '${f.id}', this.value)"><option value="">請選擇...</option>${f.options.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`
+                            : `<input type="text" class="form-input text-sm" placeholder="${f.placeholder}" value="${val}" oninput="window.handleInput('${stage.id}', '${f.id}', this.value)">`
+                        }
+                    </div>`;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        window.saveKey = function() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if(key) { appState.apiKey = key; window.showToast('API Key 已設定'); }
+            else { appState.apiKey = ""; window.showToast('已清除 Key，將使用系統底層額度', 'success'); }
+        };
+        window.toggleKey = function() {
+            const el = document.getElementById('apiKeyInput');
+            const ic = document.getElementById('keyIcon');
+            if(el.type === 'password') { el.type = 'text'; ic.className = 'fas fa-eye-slash text-xs'; }
+            else { el.type = 'password'; ic.className = 'fas fa-eye text-xs'; }
+        };
+
+        async function callGemini(sysPrompt, userPrompt, isJson) {
+            const model = "gemini-3.8-flash"; 
+            const key = appState.apiKey || "AIzaSyDTSfcjoo5Aiv4EsnMTZ28fFah1Y56WnUg"; 
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+            let payload = { contents: [{ role: "user", parts: [{ text: userPrompt }] }], systemInstruction: { parts: [{ text: sysPrompt }] } };
+            if (isJson) payload.generationConfig = { responseMimeType: "application/json" };
+
+            try {
+                const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!res.ok) throw new Error(`API Error`);
+                const data = await res.json();
+                const text = data.candidates[0].content.parts[0].text;
+                return isJson ? JSON.parse(text) : text;
+            } catch (e) {
+                window.showToast(`連線失敗，請檢查金鑰或網路`, 'error'); return null;
+            }
+        }
+
+        window.triggerAI = async function(action) {
+            const stage = DIAGNOSIS_STAGES.find(s => s.id === appState.currentStageId);
+            const data = appState.projects[appState.currentProjectId].data[stage.id];
+            if(!data || !Object.values(data).some(v => v.trim() !== '')) { window.showToast('請先填寫內容', 'error'); return; }
+
+            let sys = `你是麥肯錫等級顧問。協助評估【${stage.title}】。使用繁體中文。\n`;
+            if (action === 'ask') {
+                sys += `對使用者輸入進行追問。\n回傳 JSON: {"questions": [{"q": "問題", "reason": "說明"}]}`;
+            } else {
+                sys += `檢查邏輯一致性與風險。\n回傳 JSON: {"issues": [{"type": "風險類型", "msg": "說明", "severity": "高/中/低"}]}`;
+            }
+
+            document.getElementById('aiLoading').classList.remove('hidden');
+            const res = await callGemini(sys, JSON.stringify(data, null, 2), true);
+            document.getElementById('aiLoading').classList.add('hidden');
+
+            if (res) {
+                const chat = document.getElementById('aiChatArea');
+                let html = `<div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm mt-3 animate-slide-up"><ul class="space-y-3">`;
+                if (action === 'ask' && res.questions) {
+                    res.questions.forEach(q => html += `<li><strong class="text-slate-800 text-sm block mb-1">${q.q}</strong><span class="text-xs text-slate-600 bg-slate-50 p-2 rounded block">${q.reason}</span></li>`);
+                } else if (action === 'check' && res.issues) {
+                    res.issues.forEach(iss => html += `<li><strong class="text-slate-800 text-sm">${iss.type}</strong><p class="text-xs text-slate-600">${iss.msg}</p></li>`);
+                }
+                html += `</ul></div>`;
+                chat.insertAdjacentHTML('beforeend', html);
+                // 確保滾動到底部 (替換為 setTimeout 確保渲染完畢再滾動)
+                setTimeout(() => {
+                    chat.scrollTop = chat.scrollHeight;
+                }, 50);
+            }
+        };
+
+        function parseMarkdownToProfessionalHtml(mdText) {
+            if (!mdText) return '';
+            let html = '';
+            const lines = mdText.split('\n');
+            let inList = false;
+            let inTable = false;
+
+            const formatText = (text) => text.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #1e3a8a; font-weight: 900; background-color: #f8fafc; padding: 2px 4px; border: 1px solid #e2e8f0; border-radius: 4px;">$1</strong>');
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                if (!line) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (inTable) { html += '</tbody></table></div>'; inTable = false; }
+                    html += '<div style="height: 12px;"></div>';
+                    continue;
+                }
+
+                if (line.startsWith('|')) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (/^\|[-:\s|]+\|$/.test(line)) continue;
+
+                    const cells = line.split('|').map(c => c.trim()).filter((c, index, arr) => !(c === '' && (index === 0 || index === arr.length - 1)));
+
+                    if (!inTable) {
+                        inTable = true;
+                        html += `<div style="overflow-x: auto; margin-bottom: 24px; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 10.5pt; text-align: left; background-color: #ffffff;">
+                                    <thead><tr style="background-color: #1e3a8a;">`;
+                        cells.forEach(cell => { html += `<th style="padding: 12px 16px; color: #ffffff; font-weight: bold; border-right: 1px solid #3b82f6;">${formatText(cell)}</th>`; });
+                        html += `</tr></thead><tbody>`;
+                    } else {
+                        html += `<tr style="border-bottom: 1px solid #e2e8f0; background-color: #ffffff;">`;
+                        cells.forEach(cell => { html += `<td style="padding: 12px 16px; color: #334155; vertical-align: top; border-right: 1px solid #f1f5f9; line-height: 1.6;">${formatText(cell)}</td>`; });
+                        html += `</tr>`;
+                    }
+                    continue;
+                } else if (inTable) {
+                    html += '</tbody></table></div>'; 
+                    inTable = false;
+                }
+
+                if (line.startsWith('### ')) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    html += `<h3 style="font-family: 'Noto Serif TC', serif; color:#0f172a; font-size:16pt; font-weight:900; margin-top:32px; margin-bottom:16px; border-bottom:2px solid #1e3a8a; padding-bottom:8px;">${formatText(line.substring(4))}</h3>`;
+                    continue;
+                }
+                if (line.startsWith('#### ') || line.startsWith('## ')) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    html += `<h4 style="font-family: 'Noto Serif TC', serif; color:#1e3a8a; font-size:13pt; font-weight:700; margin-top:24px; margin-bottom:12px;">${formatText(line.replace(/^#+\s/, ''))}</h4>`;
+                    continue;
+                }
+                
+                if (line.startsWith('- ') || line.startsWith('* ')) {
+                    if (!inList) { html += '<ul style="list-style-type:disc; padding-left:24px; margin-bottom:16px; color:#1e293b; font-size:11pt; line-height:1.7;">'; inList = true; }
+                    html += `<li style="margin-bottom:8px;">${formatText(line.substring(2))}</li>`;
+                    continue;
+                }
+                
+                if (inList) { html += '</ul>'; inList = false; }
+                html += `<p style="margin-bottom:16px; line-height:1.8; font-size:11pt; color:#334155;">${formatText(line)}</p>`;
+            }
+            
+            if (inList) html += '</ul>';
+            if (inTable) html += '</tbody></table></div>';
+            
+            return html;
+        }
+
+        window.generateAndShowReport = async function(forceRegenerate = false) {
+            const pid = appState.currentProjectId;
+            const proj = appState.projects[pid];
+            
+            const hasData = DIAGNOSIS_STAGES.some(stage => Object.values(proj.data[stage.id] || {}).some(v => v.trim() !== ''));
+            if (!hasData) { window.showToast('請填寫專案內容', 'error'); return; }
+
+            if (proj.aiReportText && !forceRegenerate) {
+                renderReportView(); window.navigate('report'); return;
+            }
+
+            document.getElementById('reportLoadingOverlay').classList.remove('hidden');
+            document.getElementById('reportLoadingOverlay').classList.add('flex');
+            
+            const sys = `撰寫企業戰略診斷報告。使用繁體中文 Markdown。
+            對於任何量化指標、財務預測公式或商業模型推演，必須使用 LaTeX 語法（例如 $ROI = \\frac{Net Profit}{Investment}$ 或 $$...$$）。`;
+            
+            const res = await callGemini(sys, JSON.stringify(proj.data), false);
+            document.getElementById('reportLoadingOverlay').classList.add('hidden');
+            document.getElementById('reportLoadingOverlay').classList.remove('flex');
+
+            if(res) {
+                appState.projects[pid].aiReportText = parseMarkdownToProfessionalHtml(res);
+                saveToLocal(); debouncedCloudSave(pid);
+                renderReportView(); window.navigate('report');
+            }
+        };
+
+        function renderReportView() {
+            const container = document.getElementById('reportContent');
+            const proj = appState.projects[appState.currentProjectId];
+            
+            let html = `<div class="report-title-container"><h1>六層戰略診斷報告</h1><div class="meta">${proj.title}</div></div>`;
+            if (proj.aiReportText) html += `<div style="margin-bottom: 60px;">${proj.aiReportText}</div>`;
+            container.innerHTML = html;
+
+            // Trigger KaTeX render
+            if (window.renderMathInElement) {
+                renderMathInElement(container, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        window.exportToWord = function() {
+            const projTitle = appState.projects[appState.currentProjectId].title;
+            const contentHTML = document.getElementById('reportContent').innerHTML;
+            const wordHTML = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${projTitle}</title></head><body>${contentHTML}</body></html>`;
+            const blob = new Blob(['\ufeff', wordHTML], { type: 'application/msword' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `${projTitle}_報告.doc`;
+            link.click();
+        };
+
+        function initTemplates() {
+            document.getElementById('templateListArea').innerHTML = TEMPLATES.map((tpl, i) => `
+                <div class="border border-slate-200 rounded-xl p-4 sm:p-5 hover:border-primary-400 hover:shadow-md transition-all cursor-pointer bg-slate-50 group flex flex-col h-full" onclick="window.loadTemplate(${i})">
+                    <h3 class="font-bold text-slate-800 text-sm sm:text-base mb-2 group-hover:text-primary-600 transition-colors">${tpl.title}</h3>
+                    <p class="text-slate-500 text-xs sm:text-sm leading-relaxed flex-1">${tpl.desc}</p>
+                    <div class="mt-4 text-right">
+                        <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full border border-indigo-100">內含 3P 盲點測試</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function loadTemplate(i) {
+            window.createNewProject(TEMPLATES[i].data, TEMPLATES[i].title);
+            window.hideModal('templateModal');
+            window.showToast('已載入範本！請點擊右下角「顧問深度追問」，看 AI 如何抓出缺乏限制的盲點。');
+        }
+
+        function initChatbotDragAndResize() {
+            const chatbot = document.getElementById('chatbot-container');
+            const header = document.getElementById('chatbot-header');
+            const resizeHandle = document.getElementById('chatbot-resize-handle');
+            
+            let isDragging = false, isResizing = false;
+            let startX, startY, startWidth, startHeight, startLeft, startTop;
+
+            header.addEventListener('mousedown', (e) => {
+                if (e.target.closest('button') || e.target === resizeHandle) return; 
+                isDragging = true;
+                startX = e.clientX; startY = e.clientY;
+                const rect = chatbot.getBoundingClientRect();
+                startLeft = rect.left; startTop = rect.top;
+                document.body.style.userSelect = 'none'; 
+            });
+
+            resizeHandle.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                startX = e.clientX; startY = e.clientY;
+                const rect = chatbot.getBoundingClientRect();
+                startWidth = rect.width; startHeight = rect.height;
+                startLeft = rect.left; startTop = rect.top;
+                document.body.style.userSelect = 'none';
+                e.stopPropagation();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    let newLeft = startLeft + (e.clientX - startX);
+                    let newTop = startTop + (e.clientY - startY);
+                    
+                    newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - chatbot.offsetWidth));
+                    newTop = Math.max(0, Math.min(newTop, window.innerHeight - chatbot.offsetHeight));
+                    
+                    chatbot.style.left = `${newLeft}px`;
+                    chatbot.style.top = `${newTop}px`;
+                    chatbot.style.right = 'auto'; 
+                    chatbot.style.bottom = 'auto';
+                }
+                if (isResizing) {
+                    let dx = e.clientX - startX;
+                    let dy = e.clientY - startY;
+                    
+                    let newWidth = startWidth - dx;
+                    let newHeight = startHeight - dy;
+                    
+                    if (newWidth >= 280) {
+                        chatbot.style.width = `${newWidth}px`;
+                        chatbot.style.left = `${startLeft + dx}px`;
+                        chatbot.style.right = 'auto';
+                    }
+                    if (newHeight >= 350) {
+                        chatbot.style.height = `${newHeight}px`;
+                        chatbot.style.top = `${startTop + dy}px`;
+                        chatbot.style.bottom = 'auto';
+                    }
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                isResizing = false;
+                document.body.style.userSelect = '';
+            });
+        }
+        
+        window.changeChatFontSize = function(delta) {
+            chatFontSize += delta * 2;
+            chatFontSize = Math.max(12, Math.min(chatFontSize, 24));
+            document.getElementById('chatbot-messages').style.fontSize = `${chatFontSize}px`;
+        };
+
+        window.toggleChatbot = function() {
+            const cb = document.getElementById('chatbot-container');
+            const fab = document.getElementById('chatbot-fab');
+            if (cb.classList.contains('hidden')) {
+                cb.classList.remove('hidden'); 
+                cb.classList.add('flex'); // 確保重新開啟時套用 flex 佈局，這樣 scroll 才能生效
+                cb.style.top = ''; cb.style.left = ''; cb.style.bottom = '24px'; cb.style.right = '24px';
+                document.getElementById('chatbot-input').focus();
+                fab.classList.add('hidden'); fab.classList.remove('flex');
+            } else {
+                cb.classList.add('hidden'); 
+                cb.classList.remove('flex'); // 關閉時移除 flex
+                fab.classList.remove('hidden'); fab.classList.add('flex');
+            }
+        };
+
+        window.sendChatbotMessage = async function() {
+            const input = document.getElementById('chatbot-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            addChatMessage(msg, 'user');
+            input.value = '';
+            
+            const loadingId = 'loading-' + Date.now();
+            const messagesArea = document.getElementById('chatbot-messages');
+            messagesArea.insertAdjacentHTML('beforeend', `<div id="${loadingId}" class="flex"><div class="bg-white border border-slate-200 text-slate-400 rounded-xl rounded-tl-none p-3 shadow-sm animate-pulse"><i class="fas fa-ellipsis-h"></i></div></div>`);
+            
+            setTimeout(() => {
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }, 50);
+
+            let contextStr = "目前無專案資料。";
+            if (appState.currentProjectId && appState.currentStageId) {
+                const stageData = appState.projects[appState.currentProjectId].data[appState.currentStageId];
+                if (stageData) contextStr = JSON.stringify(stageData, null, 2);
+            }
+
+            const sysPrompt = `你是 TONY AI 顧問助理。請使用繁體中文。你可以使用 Markdown 排版。
+            這是一個企業戰略診斷系統。使用者可能正在填寫某個階段的資料。
+            【當前使用者正在編輯的資料 context】：\n${contextStr}\n
+            請根據使用者的問題給予專業且具啟發性的回答。如果是閒聊，請保持專業禮貌。`;
+
+            const res = await callGemini(sysPrompt, msg, false);
+            document.getElementById(loadingId)?.remove();
+
+            if (res) addChatMessage(res, 'bot');
+            else addChatMessage("抱歉，連線發生錯誤。請確認您的 API Key。", 'bot');
+        };
+
+        function addChatMessage(text, sender) {
+            const messagesArea = document.getElementById('chatbot-messages');
+            
+            let formattedText = text;
+            if (sender === 'bot') {
+                try {
+                    // 使用 marked 渲染 Markdown
+                    formattedText = marked.parse(text);
+                } catch(e) {
+                    formattedText = text.replace(/\n/g, '<br>');
+                }
+            } else {
+                formattedText = text.replace(/\n/g, '<br>');
+            }
+
+            let html = '';
+            if(sender === 'user') {
+                html = `<div class="flex justify-end"><div class="bg-primary-600 text-white rounded-xl rounded-tr-none p-3 max-w-[85%] leading-relaxed shadow-sm">${formattedText}</div></div>`;
+            } else {
+                // 套用 chatbot-markdown-content CSS 類別讓渲染出來的 HTML 正確排版
+                html = `<div class="flex"><div class="bg-white border border-slate-200 text-slate-800 rounded-xl rounded-tl-none p-3 max-w-[85%] leading-relaxed shadow-sm chatbot-markdown-content">${formattedText}</div></div>`;
+            }
+            
+            messagesArea.insertAdjacentHTML('beforeend', html);
+            
+            // 強制確保滾動到底部，改用 setTimeout 確保大量 Markdown 渲染後高度正確抓取
+            setTimeout(() => {
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }, 50);
+        }
+
+        window.initTemplates = initTemplates;
+        window.loadTemplate = loadTemplate;
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
