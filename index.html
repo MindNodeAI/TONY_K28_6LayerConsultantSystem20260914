@@ -1117,12 +1117,34 @@
             document.getElementById('reportLoadingOverlay').classList.remove('hidden');
             document.getElementById('reportLoadingOverlay').classList.add('flex');
             
-            // 嚴格禁止 ASCII Arts，強迫使用 Table
+            // 嚴格禁止 ASCII Arts，強迫使用 Table，並加入 VSM 與 BPR 模塊要求
             const sys = `撰寫企業戰略診斷報告。使用繁體中文 Markdown。
             【排版嚴格限制 - 必須遵守】：
             1. 絕對禁止使用純文字符號 (ASCII Art，如 +---+, |, ^, --->) 來繪製矩陣、架構圖或時間軸。
             2. 所有的矩陣分析 (如利益關係人矩陣、風險矩陣)、時間軸與行動計畫，都「必須」使用標準的 Markdown 表格 (Table) 來呈現 (格式：| 欄位1 | 欄位2 |)。
-            3. 對於任何量化指標、財務預測公式或商業模型推演，必須使用 LaTeX 語法（例如 $ROI = \\frac{Net Profit}{Investment}$ 或 $$...$$）。`;
+            3. 對於任何量化指標、財務預測公式或商業模型推演，必須使用 LaTeX 語法（例如 $ROI = \\frac{Net Profit}{Investment}$ 或 $$...$$）。
+            
+            【報告架構要求 - 必須包含以下七大模塊】：
+            ### 1. Executive Summary 高階主管摘要
+            用 3-4 句話精準總結目前的現況衝突、核心戰略主張，以及最大的風險與下一步。
+
+            ### 2. 現況解構與核心挑戰 (Situation & Complication)
+            綜合分析使用者的「問題層」與「角色層」，點出真正的痛點以及組織內部的政治阻力。
+
+            ### 3. VSM 價值流圖盤點與 As-Is 斷點清單
+            依價值流圖（VSM）盤點 As-Is 流程，列出具體的「As-Is 斷點清單」，並剖析背後的價值觀阻力與真實痛點。
+
+            ### 4. BPR 企業流程再造與 To-Be 重構
+            依 Michael Hammer 企業流程再造理論（BPR），將流程重構為「單一入口、兩段評估、分級處理、可追溯決策」的全新架構。
+
+            ### 5. 戰略價值與護城河 (Strategic Value & Moat)
+            綜合說明這個方案能帶來的具體商業價值、維持現狀的代價，以及我們的關鍵差異護城河。
+
+            ### 6. 關鍵假設與風險評估 (Assumptions & Risks)
+            犀利點出目前計畫中的主觀假設與未知變數。必須使用 Markdown 表格呈現風險與因應矩陣。
+
+            ### 7. MVP 驗證行動藍圖 (Action Plan)
+            根據行動層，列出具體的最小驗證實驗、成功門檻、負責人與期限。`;
             
             const res = await callGemini(sys, JSON.stringify(proj.data), false);
             document.getElementById('reportLoadingOverlay').classList.add('hidden');
