@@ -17,6 +17,10 @@
     <!-- Marked.js for Chatbot Markdown Parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
+    <!-- Document Parsing Libraries (Excel, Word) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -71,10 +75,14 @@
         .chatbot-markdown ul { list-style-type: disc; padding-left: 20px; margin-bottom: 8px; }
         .chatbot-markdown li { margin-bottom: 4px; }
         .chatbot-markdown strong { font-weight: bold; color: #0f172a; }
+
+        .drop-zone { border: 2px dashed #cbd5e1; background: #f8fafc; transition: all 0.2s ease; }
+        .drop-zone.dragover { border-color: #3b82f6; background: #eff6ff; }
     </style>
 </head>
 <body class="h-screen overflow-hidden flex flex-col antialiased selection:bg-primary-200 selection:text-primary-900">
 
+    <!-- Header -->
     <header class="bg-slate-900 text-white h-14 flex items-center justify-between px-6 shrink-0 shadow-md z-50 relative">
         <div class="flex items-center gap-4 cursor-pointer group" onclick="window.navigate('dashboard')">
             <img src="https://firebasestorage.googleapis.com/v0/b/k16-tony-ai-wisdom-platform.firebasestorage.app/o/assets%2F6av64EOvvqQNAIoXqcPfHC5BBeF3%2F1785039560457_1.png?alt=media&token=19b27497-4101-4436-bc80-b299741b7984" alt="LOGO" class="h-8 object-contain transition-transform group-hover:scale-105">
@@ -85,6 +93,7 @@
         </div>
 
         <div class="flex items-center gap-4 sm:gap-6">
+            <!-- API Key Input -->
             <div class="flex flex-col items-end justify-center">
                 <div class="flex items-center bg-slate-800 rounded-full border border-slate-700 px-3 sm:px-4 py-1.5 focus-within:border-primary-500 focus-within:bg-slate-900 transition-all shadow-inner">
                     <i class="fas fa-key text-slate-400 mr-2 sm:mr-3 text-xs"></i>
@@ -93,17 +102,15 @@
                     <button onclick="window.toggleKey()" class="text-slate-400 hover:text-white mx-1 sm:mx-2 transition-colors"><i class="fas fa-eye text-xs" id="keyIcon"></i></button>
                     <button onclick="window.saveKey()" class="text-primary-400 hover:text-primary-300 text-xs font-bold transition-colors ml-1 sm:ml-2">設定</button>
                 </div>
-                <!-- 對齊修正：添加 w-full 與 text-right -->
                 <div class="w-full text-right mt-1 pr-2">
                     <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-primary-400 hover:text-primary-300 hover:underline"><i class="fas fa-external-link-alt"></i> 免費取得金鑰</a>
                 </div>
             </div>
 
+            <!-- Profile & Login -->
             <div class="flex items-center gap-4 pl-4 sm:pl-6 border-l border-slate-700">
                 <div id="cloudSyncStatus" class="hidden sm:flex items-center text-[11px] text-slate-300 font-medium tracking-wide">
-                    <!-- Sync status here -->
                 </div>
-                <!-- Google Login Profile Area -->
                 <div id="authProfileArea">
                     <button onclick="window.loginWithGoogle()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-1.5 px-4 rounded-full flex items-center gap-2 transition-colors">
                         <i class="fab fa-google"></i> 登入
@@ -118,7 +125,7 @@
     </header>
 
     <main class="flex-1 relative flex overflow-hidden bg-slate-50 w-full">
-        <!-- View: Dashboard -->
+        <!-- ==================== View: Dashboard ==================== -->
         <div id="view-dashboard" class="absolute inset-0 overflow-y-auto p-6 sm:p-10 hidden animate-fade-in z-10 bg-slate-50">
             <div class="max-w-7xl mx-auto">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
@@ -139,8 +146,10 @@
             </div>
         </div>
 
-        <!-- View: Workspace -->
+        <!-- ==================== View: Workspace ==================== -->
         <div id="view-workspace" class="absolute inset-0 flex flex-col md:flex-row hidden animate-fade-in z-20 bg-white">
+            
+            <!-- Sidebar Left -->
             <aside class="w-full md:w-64 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col shrink-0 relative z-10 shadow-sm md:shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
                 <div class="p-4 md:p-5 border-b border-slate-200 bg-white md:bg-transparent">
                     <button onclick="window.navigate('dashboard')" class="text-xs text-slate-500 hover:text-primary-600 mb-3 flex items-center gap-2 transition-colors font-medium">
@@ -151,6 +160,13 @@
                            placeholder="輸入專案名稱..."
                            onchange="window.updateProjectTitle(this.value)">
                 </div>
+                
+                <div class="px-4 pt-4 pb-2 border-b border-slate-200">
+                    <button onclick="window.openUploadModal()" class="w-full flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold py-2 px-3 rounded-lg border border-indigo-200 transition-colors text-sm shadow-sm">
+                        <i class="fas fa-folder-open"></i> 參考資料管理與解析
+                    </button>
+                </div>
+
                 <nav class="flex-1 p-3 space-y-1 overflow-x-auto md:overflow-y-auto flex flex-row md:flex-col" id="sidebarNav"></nav>
                 <div class="p-4 border-t border-slate-200 bg-white hidden md:block">
                     <button onclick="window.generateAndShowReport()" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-all group">
@@ -159,10 +175,12 @@
                 </div>
             </aside>
 
+            <!-- Center Content -->
             <section class="flex-1 flex flex-col overflow-y-auto bg-slate-50/50 scroll-smooth relative">
                 <div class="max-w-3xl w-full mx-auto p-6 md:p-10 flex-1" id="dynamicContentArea"></div>
             </section>
 
+            <!-- Sidebar Right (AI Coach) -->
             <aside class="w-full md:w-[340px] bg-white border-t md:border-t-0 md:border-l border-slate-200 flex flex-col shrink-0 shadow-[-4px_0_24px_rgba(0,0,0,0.03)] z-10 h-72 md:h-auto">
                 <div class="p-4 border-b border-slate-200 bg-gradient-to-r from-primary-50 to-white flex flex-col gap-3 shrink-0">
                     <div class="flex items-center justify-between">
@@ -206,7 +224,7 @@
             </aside>
         </div>
 
-        <!-- View: Report -->
+        <!-- ==================== View: Report ==================== -->
         <div id="view-report" class="absolute inset-0 overflow-y-auto p-6 sm:p-10 hidden animate-fade-in z-30 bg-slate-100">
             <div class="max-w-[21cm] mx-auto mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden">
                 <button onclick="window.navigate('workspace')" class="text-slate-600 hover:text-slate-900 font-semibold flex items-center gap-2 bg-white px-5 py-2.5 rounded-lg shadow-sm border border-slate-200 transition-colors w-full sm:w-auto justify-center">
@@ -225,7 +243,7 @@
         </div>
     </main>
 
-    <!-- Floating Chatbot -->
+    <!-- ==================== Floating Chatbot ==================== -->
     <button id="chatbot-fab" onclick="window.toggleChatbot()" class="fixed bottom-6 right-6 w-14 h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform hover:scale-110 z-[9999]">
         <i class="fas fa-comment-dots"></i>
     </button>
@@ -252,32 +270,59 @@
         </div>
     </div>
 
-    <!-- Modals & Overlays -->
+    <!-- ==================== Modals & Overlays ==================== -->
+    
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden animate-fade-in p-4" onclick="if(event.target===this) window.hideModal('uploadModal')">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[90vh] relative animate-slide-up">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fas fa-cloud-upload-alt text-indigo-600"></i> 上傳專案背景資料</h2>
+                    <p class="text-xs text-slate-500 mt-1">支援 PDF, Word, Excel, 圖片。上傳後可交由 AI 自動解析並填入六層架構。</p>
+                </div>
+                <button onclick="window.hideModal('uploadModal')" class="text-slate-400 hover:text-slate-700 transition-colors"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            
+            <div class="p-6 flex-1 overflow-y-auto">
+                <div id="dropZone" class="drop-zone border-2 border-dashed rounded-xl p-8 text-center cursor-pointer mb-6" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-file-import text-4xl text-slate-300 mb-3"></i>
+                    <p class="text-slate-600 font-medium mb-1">點擊此處選擇檔案，或將檔案拖曳至此</p>
+                    <p class="text-xs text-slate-400">PDF, Word, Excel, TXT, Image</p>
+                    <input type="file" id="fileInput" class="hidden" multiple accept=".pdf,.docx,.xlsx,.txt,image/*" onchange="window.handleFileUpload(event)">
+                </div>
+
+                <div id="fileListContainer" class="space-y-3">
+                    <!-- File list will be injected here -->
+                </div>
+            </div>
+
+            <div class="p-6 border-t border-slate-100 bg-slate-50 rounded-b-2xl flex justify-between items-center shrink-0">
+                <span id="fileCountText" class="text-sm font-semibold text-slate-600">已上傳 0 份文件</span>
+                <button onclick="window.startAIAutoFill()" id="btnAutoFill" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg shadow-md font-bold text-sm transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-magic"></i> AI 智能解析並填入
+                </button>
+            </div>
+            
+            <div id="uploadLoadingOverlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 hidden flex-col items-center justify-center rounded-2xl">
+                <i class="fas fa-circle-notch fa-spin text-indigo-600 text-4xl mb-4"></i>
+                <p class="text-sm font-bold text-slate-700" id="uploadLoadingMsg">AI 正在深度解析文件...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Loading Overlay -->
     <div id="reportLoadingOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] hidden flex-col items-center justify-center animate-fade-in">
         <div class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-full mx-4 text-center">
             <i class="fas fa-circle-notch fa-spin text-primary-600 text-4xl mb-4"></i>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">AI 顧問撰寫報告中</h3>
-            <p class="text-sm text-slate-500">正在揉合您的六層資料，並渲染量化模型，請稍候...</p>
+            <h3 class="text-xl font-bold text-slate-800 mb-2" id="mainLoadingTitle">AI 顧問撰寫報告中</h3>
+            <p class="text-sm text-slate-500" id="mainLoadingDesc">正在揉合您的六層資料，並渲染量化模型，請稍候...</p>
         </div>
     </div>
 
-    <footer class="bg-white border-t border-slate-200 py-2 sm:py-3 text-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-50 relative">
-        <p class="text-[10px] sm:text-[11px] text-slate-400 font-semibold uppercase tracking-widest px-4">
-            © 2026 SMEbig 司馬大顧問 & 智策慧品牌顧問有限公司. All Rights Reserved.
-        </p>
-    </footer>
-
-    <div id="customAlert" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[300] hidden">
-        <div id="customAlertContent" class="bg-white border-l-4 rounded-lg shadow-2xl p-4 flex items-center gap-3 min-w-[300px]">
-            <i id="customAlertIcon" class="text-xl"></i>
-            <span id="customAlertText" class="text-sm font-semibold text-slate-700"></span>
-        </div>
-    </div>
-
-    <!-- Profile Modal Fix: TONY 楊文澤顧問 + List Outside -->
+    <!-- Profile Modal (Perfectly formatted) -->
     <div id="profileModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden animate-fade-in p-4" onclick="if(event.target===this) window.hideModal('profileModal')">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all animate-slide-up flex flex-col max-h-[90vh] relative pt-16 mt-16">
-            <!-- Avatar moved OUTSIDE overflow container to prevent clipping -->
+            <!-- Absolute Avatar placed to overlap modal boundary smoothly -->
             <div class="absolute -top-16 left-1/2 transform -translate-x-1/2 z-20">
                 <img src="https://firebasestorage.googleapis.com/v0/b/k16-tony-ai-wisdom-platform.firebasestorage.app/o/assets%2F6av64EOvvqQNAIoXqcPfHC5BBeF3%2F1787580326393_ChatGPT%20Image%202026%E5%B9%B46%E6%9C%8819%E6%97%A5%20%E4%B8%8A%E5%8D%8811_16_14.png?alt=media&token=3c85de41-f36f-46e5-a97a-7bc7eb83a027" 
                      alt="TONY 楊文澤顧問" class="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover bg-white">
@@ -287,14 +332,12 @@
             
             <div class="px-8 pb-8 flex-1 overflow-y-auto">
                 <div class="pt-16 text-center">
-                    <!-- 標題調整 -->
                     <h2 class="text-2xl font-bold text-slate-900 mb-1">TONY 楊文澤顧問</h2>
                     <p class="text-primary-600 text-[13px] font-bold mb-6">資深數位行銷科技顧問 | 生成式 AI 創作者 | 創業導師</p>
                     
                     <div class="space-y-6 text-sm text-slate-600 text-left">
                         <div>
                             <h3 class="font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2 mb-3"><i class="fas fa-briefcase text-primary-500 w-5 text-center"></i> 現職</h3>
-                            <!-- 修正縮排：使用 list-outside 與 ml-5 確保多行文字對齊 -->
                             <ul class="list-disc list-outside space-y-2 ml-5 text-[13px] leading-relaxed">
                                 <li>龍華科大 數位行銷講師</li>
                                 <li>智策慧 品牌行銷科技顧問</li>
@@ -330,6 +373,7 @@
         </div>
     </div>
 
+    <!-- Template Modal -->
     <div id="templateModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden animate-fade-in" onclick="if(event.target===this) window.hideModal('templateModal')">
         <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full p-6 sm:p-8 max-h-[90vh] flex flex-col mx-4 animate-slide-up">
             <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4 shrink-0">
@@ -343,10 +387,27 @@
         </div>
     </div>
 
+    <!-- Toast Alert -->
+    <div id="customAlert" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[300] hidden">
+        <div id="customAlertContent" class="bg-white border-l-4 rounded-lg shadow-2xl p-4 flex items-center gap-3 min-w-[300px]">
+            <i id="customAlertIcon" class="text-xl"></i>
+            <span id="customAlertText" class="text-sm font-semibold text-slate-700"></span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-2 sm:py-3 text-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-50 relative">
+        <p class="text-[10px] sm:text-[11px] text-slate-400 font-semibold uppercase tracking-widest px-4">
+            © 2026 SMEbig 司馬大顧問 & 智策慧品牌顧問有限公司. All Rights Reserved.
+        </p>
+    </footer>
+
+    <!-- ==================== Application Logic ==================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDTSfcjoo5Aiv4EsnMTZ28fFah1Y56WnUg",
@@ -358,12 +419,11 @@
             measurementId: "G-49B2GMT3E7"
         };
 
-        let app, db, auth, currentUid = null, isOnline = false, currentUser = null;
-        const LOCAL_STORAGE_KEY = 'sixLayerEnterprise_v11';
+        let app, db, auth, storage, currentUid = null, isOnline = false, currentUser = null;
+        const LOCAL_STORAGE_KEY = 'sixLayerEnterprise_v15'; // Bumped version
         let appState = { apiKey: '', projects: {}, currentProjectId: null, currentStageId: 'problem' };
         let chatFontSize = 14;
 
-        // 設定 marked.js 的選項，確保換行正確
         if (typeof marked !== 'undefined') {
             marked.setOptions({ breaks: true, gfm: true });
         }
@@ -431,24 +491,24 @@
 
         const TEMPLATES = [
             {
-                title: "企業內部 AI 知識庫導入", desc: "【P1 明確】點出新人痛點。【P2 缺失】刻意未提及 AI 導入預算與 IT 人力配置限制，讓 AI 抓出盲點。",
-                data: { problem: { phenomenon: "【現況與痛點 (P1)】新人報到平均需 30 天才能獨立作業。跨部門找一份結案報告平均需耗時 2 小時，極度依賴資深員工口耳相傳。", realProblem: "內部知識散落在 OneDrive、Google Drive 與無數的 Line 群組，缺乏單一且具備語意理解的檢索入口。", impactTarget: "新進員工、各部門 PM、以及不斷被打擾的資深主管。", urgency: "【刻意漏掉時間與預算底線 (P2)】公司 Q4 預計再招募 30 人，如果不解決，資深員工會花太多時間帶新人而影響本業產能。" }, people: { user: "全體員工，尤其是新人。痛點：不敢一直問問題怕被罵，只好自己瞎摸索。", buyer: "HR 總監。KPI：降低新人離職率與加速 Onboarding 時間。", decisionMaker: "總經理。只在乎這能不能幫公司省錢或提升人均產值。", resistance: "1. 資深工程師：不想花時間把腦中的經驗寫成 SOP。\n2. IT 資訊部：強烈擔憂 AI 會把公司的機密資料洩漏，抗拒導入。" }, value: { mainValue: "打造企業大腦，讓找資料從 2 小時縮短到 10 秒，釋放資深人才產能。", valueType: "加快流程", baseline: "新人獨立 30 天；找資料 2 小時", target: "新人獨立 14 天；找資料 10 秒" }, difference: { alternative: "1. 繼續用人工問答。\n2. 找工讀生重新整理 SharePoint 的資料夾架構。", keyDiff: "員工可以用自然語言提問，AI 直接給出「總結答案」並附上「來源連結」，不必點開 50 頁 PDF 慢慢看。", costOfInaction: "規模擴張的溝通成本將壓垮團隊，核心技術人員會因為太累而離職。" }, evidence: { facts: "1. 員工滿意度調查指出「找資料太難」是前三大痛點。\n2. 雲端硬碟盤點有 5000 份未結構化文件。", assumptions: "假設系統建好後，員工就會改變習慣去問 AI，而不是直接轉頭問隔壁同事。", unknowns: "舊有的文件內容是否正確？AI 會不會根據過期資料給出錯誤指引？" }, action: { biggestRisk: "行為慣性：系統建好但沒人登入使用。", mvpTest: "先把「HR 出勤與報帳規定」餵給自訂的 GPTs，讓下週報到的 5 位新人進行兩週封閉測試。", metrics: "新人在行政問題上自主解決率 > 80%", ownerAndTimeline: "HR 訓練副理，下週一" } }
+                title: "企業內部 AI 知識庫導入", desc: "【P1 明確】點出新人痛點。【P2 缺失】未提及 AI 預算與人力限制。",
+                data: { problem: { phenomenon: "新人報到平均需 30 天才能獨立作業。找報告平均耗時 2 小時。", realProblem: "內部知識散落在各處，缺乏單一具備語意理解的檢索入口。", impactTarget: "新進員工、各部門 PM", urgency: "公司 Q4 預計再招募 30 人，不解決會影響產能。" }, people: { user: "全體員工", buyer: "HR 總監", decisionMaker: "總經理", resistance: "資深工程師不想寫 SOP；IT 擔憂資安" }, value: { mainValue: "打造企業大腦，讓找資料從 2 小時縮短到 10 秒", valueType: "加快流程", baseline: "找資料 2 小時", target: "找資料 10 秒" }, difference: { alternative: "人工問答或工讀生整理資料夾", keyDiff: "自然語言提問，AI 直接給出總結與連結", costOfInaction: "溝通成本壓垮團隊，核心人才離職" }, evidence: { facts: "員工滿意度調查指出找資料太難是前三大痛點", assumptions: "假設系統建好後，員工會改變習慣去問 AI", unknowns: "舊有文件內容是否正確？AI 會否幻覺？" }, action: { biggestRisk: "系統建好但沒人登入使用", mvpTest: "先把出勤規定餵給 GPTs 讓新人封閉測試", metrics: "新人自主解決率 > 80%", ownerAndTimeline: "HR 訓練副理，下週一" } }
             },
             {
-                title: "電商網站結帳轉換率優化", desc: "【P1 明確】點出掉單現象。【P2 缺失】刻意未提及工程團隊本月剩餘的開發工時。",
-                data: { problem: { phenomenon: "【現況與痛點 (P1)】GA 數據顯示，高達 70% 的使用者在購物車點擊「結帳」後，卡在「會員註冊/登入」頁面跳出。", realProblem: "結帳流程設計以「收集完整客戶個資」為導向，填寫欄位高達 12 項，產生極大摩擦力。", impactTarget: "終端消費者、電商營運部、行銷部。", urgency: "【刻意漏掉開發資源限制 (P2)】下個月即將迎來大促銷，廣告 CPA 已經逼近毛利邊緣，必須馬上改善轉換率。" }, people: { user: "用手機購物的消費者。痛點：在小螢幕上打字輸入地址和密碼非常痛苦。", buyer: "電商營運總監。KPI：整體網站的 GMV (交易額)。", decisionMaker: "公司老闆。", resistance: "CRM 部門與行銷部：強烈堅持需要消費者填寫完整的生日、性別與 Email，才能發送 EDM 進行再行銷，反對簡化。" }, value: { mainValue: "實現無阻礙的一鍵結帳體驗，將現有廣告流量變現效率極大化。", valueType: "增加營收", baseline: "結帳階段跳出率 70%", target: "結帳階段跳出率降至 40%" }, difference: { alternative: "增加再行銷廣告(Retargeting)預算去追回未結帳客戶。", keyDiff: "從源頭減少摩擦：導入 Apple Pay / LINE 一鍵無痕結帳，連密碼都不用打。", costOfInaction: "在流量紅利消失的現在，廣告 ROI 將持續惡化，雙 11 的營收目標確定無法達成。" }, evidence: { facts: "根據 Hotjar 錄影，多數跳出發生在「設定密碼」與「確認密碼」欄位。", assumptions: "假設開放「無痕結帳」不會嚴重影響長期的客戶終身價值 (LTV)。", unknowns: "不強制註冊會員，對 6 個月內回購率的具體衝擊到底有多大？" }, action: { biggestRisk: "開放無痕結帳後，因無法觸及舊客，導致半年後整體回購營收崩盤。", mvpTest: "A/B 測試：將本週 50% 的流量導向「支援 LINE 快速登入」的結帳頁面，追蹤一週轉換率差異。", metrics: "實驗組的結帳完成率需高出對照組至少 15%，且客單價未降。", ownerAndTimeline: "電商 PM，本週三上線" } }
+                title: "電商網站結帳轉換率優化", desc: "【P1 明確】點出掉單現象。【P2 缺失】未提及工程團隊開發工時。",
+                data: { problem: { phenomenon: "70% 使用者在結帳的會員註冊頁面跳出。", realProblem: "結帳流程填寫欄位高達 12 項，產生極大摩擦力。", impactTarget: "終端消費者、營運部", urgency: "下個月大促銷，廣告 CPA 已逼近毛利邊緣。" }, people: { user: "手機購物消費者", buyer: "電商營運總監", decisionMaker: "公司老闆", resistance: "行銷部堅持需要完整個資發 EDM" }, value: { mainValue: "一鍵結帳體驗，流量變現極大化", valueType: "增加營收", baseline: "跳出率 70%", target: "跳出率降至 40%" }, difference: { alternative: "增加再行銷廣告預算", keyDiff: "導入 LINE 一鍵無痕結帳，連密碼都不用打", costOfInaction: "廣告 ROI 惡化，營收目標無法達成" }, evidence: { facts: "Hotjar 錄影顯示跳出多在密碼欄位", assumptions: "開放無痕結帳不會影響客戶終身價值", unknowns: "不強制註冊對半年內回購率衝擊多大？" }, action: { biggestRisk: "開放無痕後導致回購營收崩盤", mvpTest: "A/B 測試本週 50% 流量導向快速登入頁面", metrics: "結帳完成率高出對照組至少 15%", ownerAndTimeline: "電商 PM，本週三" } }
             },
             {
-                title: "傳統製造業無紙化產線", desc: "【P1 明確】點出良率與手抄痛點。【P2 缺失】未說明可動用的硬體採購預算上限。",
-                data: { problem: { phenomenon: "【現況與痛點 (P1)】良率異常往往到下午盤點或隔天早上看報表才發現。手抄容易寫錯，導致大批不良品流到下一站。", realProblem: "生產資訊流發生實體斷層，缺乏即時回饋與機台預警機制。現場還是靠紙本傳遞。", impactTarget: "產線領班、作業員、品保部。", urgency: "【刻意漏掉硬體預算 (P2)】歐美最大客戶要求今年底必須導入即時生產履歷，否則將從供應商名單中剔除，影響 30% 訂單。" }, people: { user: "高齡作業員。痛點：戴著手套很難按小按鈕，抗拒改變幾十年的習慣。", buyer: "廠長。KPI：稼動率與生產良率。", decisionMaker: "集團董事長。", resistance: "產線作業員：認為用系統回報會拖慢生產速度，影響計件獎金。" }, value: { mainValue: "生產數據秒級上雲，建構即時品質預警防線，確保符合大客戶的稽核標準。", valueType: "避免風險", baseline: "數據延遲時間 4-8 小時", target: "數據延遲時間 5 分鐘內" }, difference: { alternative: "增派兩名專職助理，每小時定時巡線收集紙本報表並手動輸入 ERP。", keyDiff: "資料不落地：透過 IoT 直連機台，加上極簡工業級平板讓作業員只需按「正常/異常」一鍵回報。", costOfInaction: "無法通過大客戶年底稽核，直接掉單，工廠面臨裁員危機。" }, evidence: { facts: "上個月因為延遲 4 小時才發現溫度異常，導致報廢成本高達 50 萬。", assumptions: "假設高齡作業員經過半天的訓練後，能夠適應平板介面且不作假。", unknowns: "廠房角落的 Wi-Fi 訊號是否穩定？斷線會否導致產線停擺？" }, action: { biggestRisk: "作業員強烈抗拒或頻繁按錯，導致收集到錯誤數據拖垮產能。", mvpTest: "先買 2 台防摔平板，在 A 產線安裝，設計只有兩個超大按鈕的極簡介面進行一週試運轉。", metrics: "數據回報達成率 100%，且產量未降。", ownerAndTimeline: "專案室主任，下週一" } }
+                title: "傳統製造業無紙化產線", desc: "【P1 明確】點出良率與手抄痛點。【P2 缺失】未說明硬體預算上限。",
+                data: { problem: { phenomenon: "良率異常到下午才發現，手抄寫錯導致不良品流出。", realProblem: "缺乏即時回饋與機台預警機制，靠紙本傳遞。", impactTarget: "產線領班、作業員", urgency: "客戶要求年底前導入即時生產履歷，否則掉單 30%。" }, people: { user: "高齡作業員", buyer: "廠長", decisionMaker: "集團董事長", resistance: "作業員認為系統回報會拖慢速度影響獎金" }, value: { mainValue: "數據秒級上雲，建構即時預警防線", valueType: "避免風險", baseline: "數據延遲 4 小時", target: "數據延遲 5 分鐘內" }, difference: { alternative: "增派助理手動輸入 ERP", keyDiff: "IoT 直連機台，平板一鍵異常回報", costOfInaction: "無法通過客戶稽核，直接掉單" }, evidence: { facts: "上個月因延遲發現溫度異常，報廢 50 萬", assumptions: "高齡作業員能適應平板且不作假", unknowns: "廠房角落 Wi-Fi 訊號是否穩定？" }, action: { biggestRisk: "作業員抗拒導致錯誤數據拖垮產能", mvpTest: "買 2 台平板在 A 產線安裝兩個大按鈕試運轉", metrics: "數據回報率 100% 且產量未降", ownerAndTimeline: "專案室主任，下週一" } }
             },
             {
-                title: "SaaS 產品流失率挽救", desc: "【P1 明確】訂閱客戶流失嚴重。【P2 缺失】未指明挽救活動的行銷預算上限。",
-                data: { problem: { phenomenon: "【現況與痛點 (P1)】B2B 雲端軟體新客戶在第一個月試用期結束後，續訂率 (Retention Rate) 跌破 20%。", realProblem: "產品缺乏自動化的新手引導。客戶註冊後面對空白儀表板不知道第一步該做什麼，覺得太難用而放棄。", impactTarget: "Customer Success 團隊、Growth 團隊。", urgency: "獲客成本(CAC) 已飆高，如果續訂率不拉上來，公司現金流撐不過接下來的半年。" }, people: { user: "客戶端主管。痛點：沒時間看冗長的使用手冊，想要一登入就能看到價值。", buyer: "客戶端部門經理。若試用期沒看到成效就不會請購。", decisionMaker: "我方營運長 (COO)。", resistance: "產品開發部 (RD)：認為是「行銷沒找對客戶」，不願停下手邊新功能去優化舊註冊流程。" }, value: { mainValue: "打造沉浸式新手引導體驗，讓客戶在註冊 5 分鐘內感受到產品的「驚嘆時刻 (Aha Moment)」。", valueType: "增加營收", baseline: "試用期後續訂率 20%", target: "試用期後續訂率提升至 40%" }, difference: { alternative: "錄製一堆長達 30 分鐘的教學影片叫客戶看。", keyDiff: "內建於產品中的互動式導覽 (In-App Tooltips)，帶著客戶點擊完成第一個專案，立即產生價值。", costOfInaction: "陷入「漏水水桶」效應，燒光行銷預算卻留不住人，最終資金斷裂。" }, evidence: { facts: "後台數據顯示，80% 放棄的客戶連「建立第一個專案」的按鈕都沒按過。", assumptions: "假設客戶只要完成第一步引導，他們就會覺得有價值而留下。", unknowns: "如果是因為產品定價比競品太貴，導覽做得再好他們還是不會買單？" }, action: { biggestRisk: "花了一個月開發導覽，結果客戶根本不想點，直接按『跳過』。", mvpTest: "用 Figma 畫出 3 張帶有假導覽圖示的介面，邀請 5 位剛註冊客戶進行 Zoom 訪談觀察點擊意願。", metrics: "超過 4 位客戶表示「這樣我就知道該做什麼了」。", ownerAndTimeline: "UI/UX 設計師，本週五前" } }
+                title: "SaaS 產品流失率挽救", desc: "【P1 明確】訂閱客戶流失嚴重。【P2 缺失】未指明挽救行銷預算。",
+                data: { problem: { phenomenon: "試用期結束後續訂率跌破 20%。", realProblem: "缺乏新手引導，註冊後面臨空白儀表板放棄。", impactTarget: "Customer Success 團隊", urgency: "獲客成本飆高，現金流撐不過半年。" }, people: { user: "客戶端主管", buyer: "客戶端部門經理", decisionMaker: "COO", resistance: "RD 認為是行銷找錯人不願優化舊流程" }, value: { mainValue: "沉浸式引導體驗，註冊 5 分鐘內感受 Aha Moment", valueType: "增加營收", baseline: "續訂率 20%", target: "續訂率 40%" }, difference: { alternative: "錄製 30 分鐘教學影片", keyDiff: "內建互動式導覽，帶著客戶完成第一個專案", costOfInaction: "漏水水桶效應，燒光預算資金斷裂" }, evidence: { facts: "80% 放棄客戶沒按過建立專案按鈕", assumptions: "完成第一步引導就會覺得有價值而留下", unknowns: "若是定價太貴，導覽做好也不會買單？" }, action: { biggestRisk: "花一個月開發但客戶直接按跳過", mvpTest: "Figma 假圖邀請 5 位新客戶 Zoom 訪談觀察", metrics: "超過 4 位客戶表示知道該做什麼", ownerAndTimeline: "UX 設計師，本週五" } }
             },
             {
-                title: "實體零售門市 O2O 轉型", desc: "【P1 明確】門市業績下滑。【P2 缺失】未提及開發會員 App 的時程壓力與預算底線。",
-                data: { problem: { phenomenon: "【現況與痛點 (P1)】連鎖門市近一年客流減少 30%，年輕客群流失。線上粉絲無法導流到實體消費。", realProblem: "線上與線下會員系統沒有打通。門市無法識別線上粉絲，線上也發不了門市定位優惠券，形成 O2O 斷鏈。", impactTarget: "門市店長與店員、品牌行銷部。", urgency: "競爭對手已推出掃碼集點與線上預購門市取貨的服務，我們不能再落後了。" }, people: { user: "消費者與門市店員。痛點：結帳要快，操作不能太複雜。", buyer: "行銷總監與營業總監。", decisionMaker: "集團總裁。", resistance: "門市店長：強烈抗拒，認為推廣線上 App 會把自己的業績「洗到線上」，導致獎金減少。" }, value: { mainValue: "打通全通路數據，實現「線上發券、線下核銷」，把過客變熟客。", valueType: "增加營收", baseline: "線上線下轉換率 0%", target: "線上優惠券核銷率 10%" }, difference: { alternative: "繼續印實體紙本宣傳單 (DM) 塞信箱。", keyDiff: "建立以 LINE OA 為核心的輕量系統，免下載 App，三秒鐘掃碼綁定會員領優惠。", costOfInaction: "失去與年輕世代溝通管道，淪為老化品牌，最終面臨關店潮。" }, evidence: { facts: "問卷顯示，70% 客人表示不願意為了一個品牌下載專屬 App。", assumptions: "假設只要發放高額首購券，年輕人就願意在結帳時花 3 秒掃碼加 LINE。", unknowns: "現有 POS 系統老舊，是否能順利串接 LINE API 進行即時核銷？" }, action: { biggestRisk: "店長因擔心業績被搶，根本不向客人推廣掃碼。", mvpTest: "找一家示範店，由總公司派人駐點三天，拿平板在門口邀客人加 LINE 送咖啡，測試實際轉換率。", metrics: "單日成功加好友並核銷咖啡券的轉換率 > 20%。", ownerAndTimeline: "行銷部副理，下週五前" } }
+                title: "實體門市 O2O 轉型", desc: "【P1 明確】門市業績下滑。【P2 缺失】未提及開發會員系統預算。",
+                data: { problem: { phenomenon: "門市客流減少 30%，線上粉絲無法導流實體。", realProblem: "線上線下會員未打通，形成 O2O 斷鏈。", impactTarget: "門市店長、行銷部", urgency: "對手已推出掃碼集點服務，不能落後。" }, people: { user: "消費者與店員", buyer: "行銷總監", decisionMaker: "總裁", resistance: "店長抗拒認為會把業績洗到線上影響獎金" }, value: { mainValue: "打通全通路，實現線上發券線下核銷", valueType: "增加營收", baseline: "轉換率 0%", target: "核銷率 10%" }, difference: { alternative: "繼續印實體 DM 塞信箱", keyDiff: "LINE OA 輕量系統，免下載 App 三秒綁定", costOfInaction: "失去與年輕世代溝通，面臨關店潮" }, evidence: { facts: "70% 客人不願下載專屬 App", assumptions: "發高額券年輕人就願意花 3 秒掃碼", unknowns: "老舊 POS 能否順利串接 LINE API？" }, action: { biggestRisk: "店長擔心業績被搶根本不推廣", mvpTest: "派人駐點示範店拿平板邀客人加 LINE 測試", metrics: "單日成功加好友核銷率 > 20%", ownerAndTimeline: "行銷副理，下週五" } }
             }
         ];
 
@@ -467,7 +527,7 @@
         window.loadTemplate = function(i) {
             window.createNewProject(TEMPLATES[i].data, TEMPLATES[i].title);
             window.hideModal('templateModal');
-            window.showToast(`已載入範本！請點擊右下角「顧問深度追問」，看 AI 如何抓出缺乏限制的盲點。`);
+            window.showToast(`已載入範本！請點擊右下角「顧問深度追問」，看 AI 如何抓出盲點。`);
         };
 
         window.showToast = function(msg, type = 'success') {
@@ -490,6 +550,7 @@
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
+                storage = getStorage(app);
                 
                 window.loginWithGoogle = async function() {
                     const provider = new GoogleAuthProvider();
@@ -526,7 +587,7 @@
                         updateSyncUI(false);
                         authArea.innerHTML = `
                             <button onclick="window.loginWithGoogle()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-1.5 px-4 rounded-full flex items-center gap-2 transition-colors">
-                                <i class="fab fa-google"></i> 登入
+                                <i class="fab fa-google"></i> 登入同步
                             </button>
                         `;
                         if (!user) signInAnonymously(auth).catch(e => console.error(e));
@@ -540,6 +601,7 @@
             else { renderDashboard(); window.navigate('dashboard'); }
             
             initChatbotDragAndResize();
+            initFileDropZone();
         }
 
         window.navigate = function(viewId) {
@@ -564,7 +626,7 @@
                 acc[stage.id] = stage.fields.reduce((fAcc, field) => ({...fAcc, [field.id]: ''}), {});
                 return acc;
             }, {});
-            appState.projects[id] = { id: id, title: title, data: templateData ? JSON.parse(JSON.stringify(templateData)) : emptyData, updatedAt: Date.now() };
+            appState.projects[id] = { id: id, title: title, data: templateData ? JSON.parse(JSON.stringify(templateData)) : emptyData, files: [], updatedAt: Date.now() };
             saveToLocal(); window.openProject(id);
         };
 
@@ -573,6 +635,7 @@
                 appState.currentProjectId = id;
                 appState.currentStageId = 'problem';
                 document.getElementById('workspaceProjectTitle').value = appState.projects[id].title;
+                if(!appState.projects[id].files) appState.projects[id].files = [];
                 renderSidebar(); renderStage(); window.navigate('workspace');
             }
         };
@@ -593,7 +656,22 @@
             saveToLocal(); debouncedCloudSave(pid);
         };
 
-        function saveToLocal() { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ projects: appState.projects })); }
+        // LocalStorage 防爆機制：不要儲存大型的 files array
+        function saveToLocal() { 
+            const projectsToSave = {};
+            for (const pid in appState.projects) {
+                projectsToSave[pid] = { ...appState.projects[pid] };
+                if (projectsToSave[pid].files) {
+                    projectsToSave[pid].files = projectsToSave[pid].files.map(f => {
+                        const { data, ...rest } = f; 
+                        return rest;
+                    });
+                }
+            }
+            try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ projects: projectsToSave })); } 
+            catch(e) { console.error("Local Storage Error", e); }
+        }
+        
         function loadFromLocal() {
             const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
             if (saved) { try { appState.projects = JSON.parse(saved).projects || {}; } catch(e){} }
@@ -606,7 +684,14 @@
             updateSyncUI(true, true);
             saveTimeout = setTimeout(async () => {
                 try {
-                    await setDoc(doc(db, 'artifacts', 'k28-the-sixlayer', 'users', currentUser.uid, 'projects', pid), appState.projects[pid], { merge: true });
+                    const projectToSave = { ...appState.projects[pid] };
+                    if (projectToSave.files) {
+                        projectToSave.files = projectToSave.files.map(f => {
+                            const { data, ...rest } = f;
+                            return rest;
+                        });
+                    }
+                    await setDoc(doc(db, 'artifacts', 'k28-the-sixlayer', 'users', currentUser.uid, 'projects', pid), projectToSave, { merge: true });
                     updateSyncUI(true, false);
                 } catch(e) { updateSyncUI(false); }
             }, 1500);
@@ -669,16 +754,59 @@
                 </div>`;
         };
 
+        window.optimizeCurrentStageWith3P = async function() {
+            const pid = appState.currentProjectId;
+            const stage = DIAGNOSIS_STAGES.find(s => s.id === appState.currentStageId);
+            const currentData = appState.projects[pid].data[stage.id];
+
+            if(!currentData || !Object.values(currentData).some(v => v.trim() !== '')) { 
+                window.showToast('請先填寫一些內容或匯入檔案，才能進行 3P 優化', 'error'); 
+                return; 
+            }
+
+            document.getElementById('mainLoadingTitle').innerText = '✨ 3P 提問法優化中';
+            document.getElementById('mainLoadingDesc').innerText = 'AI 顧問正在使用 3P 框架為您重構當前層級的內容，使其更精準專業...';
+            document.getElementById('reportLoadingOverlay').classList.remove('hidden');
+            document.getElementById('reportLoadingOverlay').classList.add('flex');
+
+            const fieldKeys = stage.fields.map(f => f.id);
+            
+            const sys = `你是一位頂尖的麥肯錫戰略顧問。使用者目前在編寫【${stage.title}】的內容。
+            請使用《3P 提問法》(P1 定位 Position、P2 邊界 Perimeter、P3 推進 Progression) 的思維框架，大幅優化、擴寫並修正使用者提供的內容。
+            請讓文字變得更專業、更具體、直指核心，同時必須保留使用者的原始情境。
+            你必須回傳一個 JSON 物件，其 key 完全對應以下欄位：[${fieldKeys.join(', ')}]，並將優化後的文字填入對應的 value。
+            請勿回傳 JSON 以外的任何文字。`;
+
+            const res = await callGemini(sys, JSON.stringify(currentData), true);
+
+            document.getElementById('reportLoadingOverlay').classList.add('hidden');
+            document.getElementById('reportLoadingOverlay').classList.remove('flex');
+            document.getElementById('mainLoadingTitle').innerText = 'AI 顧問撰寫報告中';
+            document.getElementById('mainLoadingDesc').innerText = '正在揉合您的六層資料，並渲染量化模型，請稍候...';
+
+            if(res && typeof res === 'object') {
+                fieldKeys.forEach(k => { if(res[k]) appState.projects[pid].data[stage.id][k] = res[k]; });
+                saveToLocal(); debouncedCloudSave(pid);
+                renderStage();
+                window.showToast('✅ 3P 內容優化完成！');
+            } else {
+                window.showToast('優化失敗，請重試', 'error');
+            }
+        };
+
         function renderStage() {
             const container = document.getElementById('dynamicContentArea');
             const stage = DIAGNOSIS_STAGES.find(s => s.id === appState.currentStageId);
             const data = appState.projects[appState.currentProjectId].data[stage.id] || {};
 
             let html = `
-                <div class="mb-6 md:mb-8 animate-fade-in">
-                    <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-8 flex items-center gap-4">
+                <div class="mb-6 md:mb-8 animate-fade-in flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h2 class="text-3xl md:text-4xl font-black text-slate-800 flex items-center gap-4">
                         <i class="fas ${stage.icon} text-primary-600 bg-primary-50 p-3 rounded-2xl shadow-sm border border-primary-100"></i> ${stage.title}
                     </h2>
+                    <button onclick="window.optimizeCurrentStageWith3P()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-md transition-all flex items-center gap-2 text-sm shrink-0">
+                        <i class="fas fa-magic"></i> 3P 智能優化本層
+                    </button>
                 </div>
                 <div class="space-y-6 animate-slide-up pb-10">`;
 
@@ -714,11 +842,19 @@
             else { el.type = 'password'; ic.className = 'fas fa-eye text-xs'; }
         };
 
-        async function callGemini(sysPrompt, userPrompt, isJson) {
+        async function callGemini(sysPrompt, userContent, isJson, fileParts = []) {
             const model = "gemini-3.8-flash"; 
             const key = appState.apiKey || "AIzaSyDTSfcjoo5Aiv4EsnMTZ28fFah1Y56WnUg"; 
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-            let payload = { contents: [{ role: "user", parts: [{ text: userPrompt }] }], systemInstruction: { parts: [{ text: sysPrompt }] } };
+            
+            let parts = [];
+            if(typeof userContent === 'string') parts.push({ text: userContent });
+            if(fileParts && fileParts.length > 0) parts = parts.concat(fileParts);
+
+            let payload = { 
+                contents: [{ role: "user", parts: parts }], 
+                systemInstruction: { parts: [{ text: sysPrompt }] } 
+            };
             if (isJson) payload.generationConfig = { responseMimeType: "application/json" };
 
             try {
@@ -762,6 +898,145 @@
             }
         };
 
+        // --- File Upload ---
+        function initFileDropZone() {
+            const dropZone = document.getElementById('dropZone');
+            if(!dropZone) return;
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault(); dropZone.classList.remove('dragover');
+                if(e.dataTransfer.files && e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
+            });
+        }
+
+        window.openUploadModal = function() { renderFileList(); window.showModal('uploadModal'); };
+        window.handleFileUpload = function(e) { if(e.target.files.length > 0) { handleFiles(e.target.files); e.target.value = ''; } };
+
+        async function handleFiles(files) {
+            const pid = appState.currentProjectId;
+            let projectFiles = appState.projects[pid].files || [];
+
+            if (!currentUid) { window.showToast('需使用 Google 登入才能上傳檔案', 'error'); return; }
+
+            document.getElementById('uploadLoadingOverlay').classList.remove('hidden');
+            document.getElementById('uploadLoadingOverlay').classList.add('flex');
+            document.getElementById('uploadLoadingMsg').innerText = "上傳雲端並解析中...";
+
+            for(let f of files) {
+                try {
+                    const path = `artifacts/k28-the-sixlayer/users/${currentUid}/projects/${pid}/${Date.now()}_${f.name}`;
+                    const storageRef = ref(storage, path);
+                    const uploadTask = await uploadBytesResumable(storageRef, f);
+                    const downloadURL = await getDownloadURL(uploadTask.ref);
+
+                    let fileType = f.type;
+                    let fileData = null;
+                    let isBase64 = false;
+
+                    if(f.name.toLowerCase().endsWith('.docx')) {
+                        const arrayBuffer = await f.arrayBuffer();
+                        const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+                        fileData = result.value; fileType = 'text/plain';
+                    } else if(f.name.toLowerCase().endsWith('.xlsx')) {
+                        const arrayBuffer = await f.arrayBuffer();
+                        const workbook = XLSX.read(arrayBuffer);
+                        fileData = XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]);
+                        fileType = 'text/plain';
+                    } else if(f.type === 'application/pdf' || f.type.startsWith('image/')) {
+                        fileData = await fileToBase64(f); isBase64 = true;
+                    } else {
+                        fileData = await f.text(); fileType = 'text/plain';
+                    }
+
+                    projectFiles.push({ id: Date.now().toString(), name: f.name, type: fileType, data: fileData, isBase64: isBase64, storagePath: path, downloadURL: downloadURL });
+                } catch(e) { console.error(e); window.showToast(`處理失敗: ${f.name}`, 'error'); }
+            }
+
+            appState.projects[pid].files = projectFiles;
+            saveToLocal(); debouncedCloudSave(pid); renderFileList();
+            document.getElementById('uploadLoadingOverlay').classList.add('hidden');
+            document.getElementById('uploadLoadingOverlay').classList.remove('flex');
+            window.showToast('✅ 檔案已上傳！');
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader(); reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        window.deleteFile = async function(fileId) {
+            const pid = appState.currentProjectId;
+            const file = appState.projects[pid].files.find(f => f.id === fileId);
+            if (file && file.storagePath) { try { await deleteObject(ref(storage, file.storagePath)); } catch(e) {} }
+            appState.projects[pid].files = appState.projects[pid].files.filter(f => f.id !== fileId);
+            saveToLocal(); debouncedCloudSave(pid); renderFileList();
+        };
+
+        function renderFileList() {
+            const pid = appState.currentProjectId;
+            const files = appState.projects[pid].files || [];
+            const container = document.getElementById('fileListContainer');
+            const btn = document.getElementById('btnAutoFill');
+            
+            document.getElementById('fileCountText').innerText = `已上傳 ${files.length} 份文件`;
+            
+            if(files.length === 0) { container.innerHTML = '<div class="text-center text-slate-400 py-4 text-sm">無文件</div>'; btn.disabled = true; return; }
+            btn.disabled = false;
+            
+            container.innerHTML = files.map(f => {
+                let icon = f.name.endsWith('.pdf') ? 'fa-file-pdf text-red-500' : f.name.endsWith('.docx') ? 'fa-file-word text-blue-600' : f.name.endsWith('.xlsx') ? 'fa-file-excel text-green-600' : f.type.startsWith('image/') ? 'fa-file-image text-amber-500' : 'fa-file-alt text-slate-400';
+                const nameDisplay = f.downloadURL ? `<a href="${f.downloadURL}" target="_blank" class="text-sm font-semibold text-indigo-600 hover:underline truncate">${f.name}</a>` : `<span class="text-sm font-semibold text-slate-700 truncate">${f.name}</span>`;
+                return `
+                <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                    <div class="flex items-center gap-3 overflow-hidden"><i class="fas ${icon} text-xl w-6 text-center shrink-0"></i>${nameDisplay}</div>
+                    <button onclick="window.deleteFile('${f.id}')" class="text-slate-300 hover:text-rose-500 p-1 shrink-0"><i class="fas fa-trash"></i></button>
+                </div>`;
+            }).join('');
+        }
+
+        window.startAIAutoFill = async function() {
+            const pid = appState.currentProjectId;
+            const files = appState.projects[pid].files || [];
+            if(files.length === 0) return;
+
+            let hasMissingData = false;
+            files.forEach(f => { if (!f.data) hasMissingData = true; });
+            if (hasMissingData) { window.showToast('暫存內容已清空。請刪除並重新上傳。', 'error'); return; }
+
+            document.getElementById('uploadLoadingOverlay').classList.remove('hidden');
+            document.getElementById('uploadLoadingOverlay').classList.add('flex');
+
+            let fileParts = [];
+            files.forEach(f => {
+                if(f.isBase64) {
+                    fileParts.push({ text: `\n--- 檔案 [${f.name}] 內容 ---\n` });
+                    fileParts.push({ inlineData: { mimeType: f.type, data: f.data } });
+                } else {
+                    fileParts.push({ text: `\n--- 檔案 [${f.name}] 內容 ---\n${f.data}` });
+                }
+            });
+
+            const emptyData = DIAGNOSIS_STAGES.reduce((acc, stage) => { acc[stage.id] = stage.fields.reduce((fAcc, field) => ({...fAcc, [field.id]: ''}), {}); return acc; }, {});
+
+            const sys = `你是戰略顧問。閱讀參考資料並萃取內容填入「六層戰略診斷」框架。
+            你必須回傳 JSON，結構：${JSON.stringify(emptyData)}`;
+
+            const res = await callGemini(sys, "開始解析檔案：", true, fileParts);
+
+            document.getElementById('uploadLoadingOverlay').classList.add('hidden');
+            document.getElementById('uploadLoadingOverlay').classList.remove('flex');
+
+            if(res && typeof res === 'object') {
+                DIAGNOSIS_STAGES.forEach(stage => { if(res[stage.id]) stage.fields.forEach(f => { if(res[stage.id][f.id]) appState.projects[pid].data[stage.id][f.id] = res[stage.id][f.id]; }); });
+                saveToLocal(); debouncedCloudSave(pid); window.hideModal('uploadModal'); renderStage(); window.showToast('✅ 解析完成！');
+            } else { window.showToast('解析失敗。', 'error'); }
+        };
+
+        // --- Reports & Exports ---
         function parseMarkdownToProfessionalHtml(mdText) {
             if (!mdText) return '';
             let html = '';
@@ -835,17 +1110,14 @@
         window.generateAndShowReport = async function(forceRegenerate = false) {
             const pid = appState.currentProjectId;
             const proj = appState.projects[pid];
-            
             const hasData = DIAGNOSIS_STAGES.some(stage => Object.values(proj.data[stage.id] || {}).some(v => v.trim() !== ''));
             if (!hasData) { window.showToast('請填寫專案內容', 'error'); return; }
-
-            if (proj.aiReportText && !forceRegenerate) {
-                renderReportView(); window.navigate('report'); return;
-            }
+            if (proj.aiReportText && !forceRegenerate) { renderReportView(); window.navigate('report'); return; }
 
             document.getElementById('reportLoadingOverlay').classList.remove('hidden');
             document.getElementById('reportLoadingOverlay').classList.add('flex');
             
+            // 嚴格禁止 ASCII Arts，強迫使用 Table
             const sys = `撰寫企業戰略診斷報告。使用繁體中文 Markdown。
             【排版嚴格限制 - 必須遵守】：
             1. 絕對禁止使用純文字符號 (ASCII Art，如 +---+, |, ^, --->) 來繪製矩陣、架構圖或時間軸。
@@ -858,28 +1130,23 @@
 
             if(res) {
                 appState.projects[pid].aiReportText = parseMarkdownToProfessionalHtml(res);
-                saveToLocal(); debouncedCloudSave(pid);
-                renderReportView(); window.navigate('report');
+                saveToLocal(); debouncedCloudSave(pid); renderReportView(); window.navigate('report');
             }
         };
 
         function renderReportView() {
             const container = document.getElementById('reportContent');
             const proj = appState.projects[appState.currentProjectId];
-            
             let html = `<div class="report-title-container"><h1>六層戰略診斷報告</h1><div class="meta">${proj.title}</div></div>`;
             if (proj.aiReportText) html += `<div style="margin-bottom: 60px;">${proj.aiReportText}</div>`;
-            container.innerHTML = html;
+            
+            // 加入版權宣告
+            html += `<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 10pt; font-family: 'Inter', sans-serif;">
+                        @2026 TonyStudio 六層戰略診斷報告
+                     </div>`;
 
-            if (window.renderMathInElement) {
-                renderMathInElement(container, {
-                    delimiters: [
-                        {left: '$$', right: '$$', display: true},
-                        {left: '$', right: '$', display: false}
-                    ],
-                    throwOnError: false
-                });
-            }
+            container.innerHTML = html;
+            if (window.renderMathInElement) { renderMathInElement(container, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false }); }
         }
 
         window.exportToWord = function() {
@@ -887,113 +1154,64 @@
             const contentHTML = document.getElementById('reportContent').innerHTML;
             const wordHTML = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${projTitle}</title></head><body>${contentHTML}</body></html>`;
             const blob = new Blob(['\ufeff', wordHTML], { type: 'application/msword' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `${projTitle}_報告.doc`;
-            link.click();
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `${projTitle}_報告.doc`; link.click();
         };
 
+        // --- Chatbot ---
         function initChatbotDragAndResize() {
             const chatbot = document.getElementById('chatbot-container');
             const header = document.getElementById('chatbot-header');
             const resizeHandle = document.getElementById('chatbot-resize-handle');
-            
             let isDragging = false, isResizing = false;
             let startX, startY, startWidth, startHeight, startLeft, startTop;
 
             header.addEventListener('mousedown', (e) => {
                 if (e.target.closest('button') || e.target === resizeHandle) return; 
-                isDragging = true;
-                startX = e.clientX; startY = e.clientY;
-                const rect = chatbot.getBoundingClientRect();
-                startLeft = rect.left; startTop = rect.top;
-                document.body.style.userSelect = 'none'; 
+                isDragging = true; startX = e.clientX; startY = e.clientY;
+                const rect = chatbot.getBoundingClientRect(); startLeft = rect.left; startTop = rect.top; document.body.style.userSelect = 'none'; 
             });
 
             resizeHandle.addEventListener('mousedown', (e) => {
-                isResizing = true;
-                startX = e.clientX; startY = e.clientY;
-                const rect = chatbot.getBoundingClientRect();
-                startWidth = rect.width; startHeight = rect.height;
-                startLeft = rect.left; startTop = rect.top;
-                document.body.style.userSelect = 'none';
-                e.stopPropagation();
+                isResizing = true; startX = e.clientX; startY = e.clientY;
+                const rect = chatbot.getBoundingClientRect(); startWidth = rect.width; startHeight = rect.height; startLeft = rect.left; startTop = rect.top;
+                document.body.style.userSelect = 'none'; e.stopPropagation();
             });
 
             document.addEventListener('mousemove', (e) => {
                 if (isDragging) {
-                    let newLeft = startLeft + (e.clientX - startX);
-                    let newTop = startTop + (e.clientY - startY);
-                    
-                    newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - chatbot.offsetWidth));
-                    newTop = Math.max(0, Math.min(newTop, window.innerHeight - chatbot.offsetHeight));
-                    
-                    chatbot.style.left = `${newLeft}px`;
-                    chatbot.style.top = `${newTop}px`;
-                    chatbot.style.right = 'auto'; 
-                    chatbot.style.bottom = 'auto';
+                    let newLeft = Math.max(0, Math.min(startLeft + (e.clientX - startX), window.innerWidth - chatbot.offsetWidth));
+                    let newTop = Math.max(0, Math.min(startTop + (e.clientY - startY), window.innerHeight - chatbot.offsetHeight));
+                    chatbot.style.left = `${newLeft}px`; chatbot.style.top = `${newTop}px`; chatbot.style.right = 'auto'; chatbot.style.bottom = 'auto';
                 }
                 if (isResizing) {
-                    let dx = e.clientX - startX;
-                    let dy = e.clientY - startY;
-                    
-                    let newWidth = startWidth - dx;
-                    let newHeight = startHeight - dy;
-                    
-                    if (newWidth >= 280) {
-                        chatbot.style.width = `${newWidth}px`;
-                        chatbot.style.left = `${startLeft + dx}px`;
-                        chatbot.style.right = 'auto';
-                    }
-                    if (newHeight >= 350) {
-                        chatbot.style.height = `${newHeight}px`;
-                        chatbot.style.top = `${startTop + dy}px`;
-                        chatbot.style.bottom = 'auto';
-                    }
+                    let dx = e.clientX - startX; let dy = e.clientY - startY;
+                    let newWidth = startWidth - dx; let newHeight = startHeight - dy;
+                    if (newWidth >= 280) { chatbot.style.width = `${newWidth}px`; chatbot.style.left = `${startLeft + dx}px`; chatbot.style.right = 'auto'; }
+                    if (newHeight >= 350) { chatbot.style.height = `${newHeight}px`; chatbot.style.top = `${startTop + dy}px`; chatbot.style.bottom = 'auto'; }
                 }
             });
-
-            document.addEventListener('mouseup', () => {
-                isDragging = false;
-                isResizing = false;
-                document.body.style.userSelect = '';
-            });
+            document.addEventListener('mouseup', () => { isDragging = false; isResizing = false; document.body.style.userSelect = ''; });
         }
         
         window.changeChatFontSize = function(delta) {
-            chatFontSize += delta * 2;
-            chatFontSize = Math.max(12, Math.min(chatFontSize, 24));
+            chatFontSize = Math.max(12, Math.min(chatFontSize + delta * 2, 24));
             document.getElementById('chatbot-messages').style.fontSize = `${chatFontSize}px`;
         };
 
         window.toggleChatbot = function() {
-            const cb = document.getElementById('chatbot-container');
-            const fab = document.getElementById('chatbot-fab');
-            if (cb.classList.contains('hidden')) {
-                cb.classList.remove('hidden'); 
-                cb.classList.add('flex');
-                cb.style.top = ''; cb.style.left = ''; cb.style.bottom = '24px'; cb.style.right = '24px';
-                document.getElementById('chatbot-input').focus();
-                fab.classList.add('hidden'); fab.classList.remove('flex');
-            } else {
-                cb.classList.add('hidden'); cb.classList.remove('flex');
-                fab.classList.remove('hidden'); fab.classList.add('flex');
-            }
+            const cb = document.getElementById('chatbot-container'); const fab = document.getElementById('chatbot-fab');
+            if (cb.classList.contains('hidden')) { cb.classList.remove('hidden'); cb.classList.add('flex'); cb.style.top = ''; cb.style.left = ''; cb.style.bottom = '24px'; cb.style.right = '24px'; document.getElementById('chatbot-input').focus(); fab.classList.add('hidden'); fab.classList.remove('flex'); } 
+            else { cb.classList.add('hidden'); cb.classList.remove('flex'); fab.classList.remove('hidden'); fab.classList.add('flex'); }
         };
 
         window.sendChatbotMessage = async function() {
-            const input = document.getElementById('chatbot-input');
-            const msg = input.value.trim();
-            if (!msg) return;
-
-            addChatMessage(msg, 'user');
-            input.value = '';
+            const input = document.getElementById('chatbot-input'); const msg = input.value.trim();
+            if (!msg) return; addChatMessage(msg, 'user'); input.value = '';
             
             const loadingId = 'loading-' + Date.now();
             const messagesArea = document.getElementById('chatbot-messages');
             messagesArea.insertAdjacentHTML('beforeend', `<div id="${loadingId}" class="flex"><div class="bg-white border border-slate-200 text-slate-400 rounded-xl rounded-tl-none p-3 shadow-sm animate-pulse"><i class="fas fa-ellipsis-h"></i></div></div>`);
-            
-            setTimeout(() => { messagesArea.scrollTop = messagesArea.scrollHeight; }, 10);
+            requestAnimationFrame(() => messagesArea.scrollTop = messagesArea.scrollHeight);
 
             let contextStr = "目前無專案資料。";
             if (appState.currentProjectId && appState.currentStageId) {
@@ -1008,27 +1226,15 @@
 
             const res = await callGemini(sysPrompt, msg, false);
             document.getElementById(loadingId)?.remove();
-
-            if (res) addChatMessage(res, 'bot');
-            else addChatMessage("抱歉，連線發生錯誤。請確認您的 API Key。", 'bot');
+            if (res) addChatMessage(res, 'bot'); else addChatMessage("抱歉，連線發生錯誤。請確認您的 API Key。", 'bot');
         };
 
         function addChatMessage(text, sender) {
             const messagesArea = document.getElementById('chatbot-messages');
-            
-            let formattedContent = text;
-            if (sender === 'bot' && typeof marked !== 'undefined') {
-                formattedContent = marked.parse(text);
-            } else {
-                formattedContent = text.replace(/\n/g, '<br>');
-            }
-
-            let html = sender === 'user' 
-                ? `<div class="flex justify-end"><div class="bg-primary-600 text-white rounded-xl rounded-tr-none p-3 max-w-[85%] leading-relaxed shadow-sm">${formattedContent}</div></div>`
-                : `<div class="flex"><div class="bg-white border border-slate-200 text-slate-800 rounded-xl rounded-tl-none p-3 max-w-[85%] leading-relaxed shadow-sm chatbot-markdown overflow-hidden">${formattedContent}</div></div>`;
-            
+            let formattedContent = (sender === 'bot' && typeof marked !== 'undefined') ? marked.parse(text) : text.replace(/\n/g, '<br>');
+            let html = sender === 'user' ? `<div class="flex justify-end"><div class="bg-primary-600 text-white rounded-xl rounded-tr-none p-3 max-w-[85%] leading-relaxed shadow-sm">${formattedContent}</div></div>` : `<div class="flex"><div class="bg-white border border-slate-200 text-slate-800 rounded-xl rounded-tl-none p-3 max-w-[85%] leading-relaxed shadow-sm chatbot-markdown overflow-hidden">${formattedContent}</div></div>`;
             messagesArea.insertAdjacentHTML('beforeend', html);
-            setTimeout(() => { messagesArea.scrollTop = messagesArea.scrollHeight; }, 50);
+            requestAnimationFrame(() => messagesArea.scrollTop = messagesArea.scrollHeight);
         }
 
         window.addEventListener('DOMContentLoaded', initApp);
