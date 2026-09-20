@@ -85,6 +85,7 @@
 </head>
 <body class="h-screen overflow-hidden flex flex-col antialiased selection:bg-primary-200 selection:text-primary-900">
 
+    <!-- Auth View (Login / Register / Verify / Forgot) -->
     <div id="view-auth" class="absolute inset-0 z-[9999] flex items-center justify-center auth-bg animate-fade-in">
         <div class="bg-white/95 backdrop-blur-md p-8 md:p-10 rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-slide-up relative overflow-hidden">
             <div class="text-center mb-8">
@@ -156,11 +157,7 @@
                         <button onclick="window.togglePasswordVis('regPassword', 'regEye')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"><i id="regEye" class="fas fa-eye"></i></button>
                     </div>
                 </div>
-                <div class="bg-emerald-50 border border-emerald-100 p-2.5 rounded-lg text-emerald-800 text-xs flex items-start gap-2">
-                    <i class="fas fa-info-circle mt-0.5 text-emerald-500"></i>
-                    <p>溫馨提醒：註冊確認信有時會跑到「<strong>垃圾郵件匣</strong>」，請記得前往確認！</p>
-                </div>
-                <button onclick="window.handleRegister()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all flex justify-center items-center gap-2">
+                <button onclick="window.handleRegister()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all flex justify-center items-center gap-2 mt-2">
                     <i class="fas fa-user-plus"></i> 註冊並發送驗證信
                 </button>
                 <div class="text-center pt-1">
@@ -190,7 +187,7 @@
                 </div>
             </div>
 
-            <!-- 新增：註冊成功後的強制驗證提示畫面 -->
+            <!-- 註冊成功後的強制驗證提示畫面 -->
             <div id="auth-verify-form" class="space-y-4 hidden text-center animate-fade-in">
                 <i class="fas fa-envelope-open-text text-6xl text-primary-500 mb-2 mt-4"></i>
                 <h3 class="font-bold text-2xl text-slate-800">請驗證您的信箱</h3>
@@ -215,7 +212,9 @@
         </div>
     </div>
 
+    <!-- Main Application Container -->
     <div id="app-container" class="hidden h-full flex-col w-full relative">
+        <!-- Header -->
         <header class="bg-slate-900 text-white h-14 flex items-center justify-between px-6 shrink-0 shadow-md z-50 relative">
             <div class="flex items-center gap-4 cursor-pointer group" onclick="window.navigate('dashboard')">
                 <img src="https://firebasestorage.googleapis.com/v0/b/k16-tony-ai-wisdom-platform.firebasestorage.app/o/assets%2F6av64EOvvqQNAIoXqcPfHC5BBeF3%2F1785039560457_1.png?alt=media&token=19b27497-4101-4436-bc80-b299741b7984" alt="LOGO" class="h-8 object-contain transition-transform group-hover:scale-105">
@@ -245,13 +244,21 @@
 
                 <div class="flex items-center gap-4 pl-4 md:pl-6 border-l border-slate-700">
                     <div id="cloudSyncStatus" class="hidden md:flex items-center text-[11px] text-slate-300 font-medium tracking-wide"></div>
+                    
                     <div class="flex items-center gap-2 cursor-pointer group relative" onclick="window.handleLogout()" title="點擊安全登出">
                         <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold border-2 border-slate-600 group-hover:border-rose-400 transition-colors shadow-inner overflow-hidden" id="userAvatarContainer">
                             <span id="userAvatarText">U</span>
                         </div>
                         <span class="text-xs text-slate-300 font-medium group-hover:text-rose-400 transition-colors truncate max-w-[80px]" id="userNameDisplay">User</span>
                     </div>
-                    <button onclick="window.showModal('profileModal')" class="relative group ml-2" title="顧問簡介">
+
+                    <!-- 系統指南 (Guide) Button -->
+                    <button onclick="window.showModal('guideModal')" class="relative group ml-1 md:ml-2 flex items-center justify-center w-8 h-8 rounded-full bg-slate-800 border-2 border-slate-600 hover:border-amber-400 text-slate-300 hover:text-amber-400 transition-colors shadow-inner" title="系統使用手冊">
+                        <i class="fas fa-question text-sm"></i>
+                    </button>
+
+                    <!-- Profile Button -->
+                    <button onclick="window.showModal('profileModal')" class="relative group ml-1 md:ml-2" title="顧問簡介">
                         <img src="https://firebasestorage.googleapis.com/v0/b/k16-tony-ai-wisdom-platform.firebasestorage.app/o/assets%2F6av64EOvvqQNAIoXqcPfHC5BBeF3%2F1787580326393_ChatGPT%20Image%202026%E5%B9%B46%E6%9C%8819%E6%97%A5%20%E4%B8%8A%E5%8D%8811_16_14.png?alt=media&token=3c85de41-f36f-46e5-a97a-7bc7eb83a027" 
                              alt="TONY" class="w-8 h-8 rounded-full border-2 border-slate-600 group-hover:border-primary-400 transition-colors object-cover bg-white">
                     </button>
@@ -261,6 +268,7 @@
 
         <main class="flex-1 relative flex overflow-hidden bg-slate-50 w-full">
             
+            <!-- Dashboard View -->
             <div id="view-dashboard" class="absolute inset-0 overflow-y-auto p-6 sm:p-10 hidden animate-fade-in z-10 bg-slate-50">
                 <div class="max-w-7xl mx-auto">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
@@ -281,6 +289,7 @@
                 </div>
             </div>
 
+            <!-- Admin View -->
             <div id="view-admin" class="absolute inset-0 overflow-y-auto p-6 sm:p-10 hidden animate-fade-in z-[15] bg-slate-100">
                 <div class="max-w-7xl mx-auto">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4 border-b border-slate-300 pb-4">
@@ -322,6 +331,7 @@
                 </div>
             </div>
 
+            <!-- Workspace View -->
             <div id="view-workspace" class="absolute inset-0 flex flex-col md:flex-row hidden animate-fade-in z-20 bg-white">
                 <aside class="w-full md:w-64 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col shrink-0 relative z-10 shadow-sm md:shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
                     <div class="p-4 md:p-5 border-b border-slate-200 bg-white md:bg-transparent">
@@ -392,6 +402,7 @@
                 </aside>
             </div>
 
+            <!-- Report View -->
             <div id="view-report" class="absolute inset-0 overflow-y-auto p-6 sm:p-10 hidden animate-fade-in z-30 bg-slate-100">
                 <div class="max-w-[21cm] mx-auto mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden">
                     <button onclick="window.navigate('workspace')" class="text-slate-600 hover:text-slate-900 font-semibold flex items-center gap-2 bg-white px-5 py-2.5 rounded-lg shadow-sm border border-slate-200 transition-colors w-full sm:w-auto justify-center">
@@ -410,6 +421,7 @@
             </div>
         </main>
 
+        <!-- Floating Chatbot -->
         <button id="chatbot-fab" onclick="window.toggleChatbot()" class="fixed bottom-6 right-6 w-14 h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform hover:scale-110 z-[9999]">
             <i class="fas fa-comment-dots"></i>
         </button>
@@ -436,7 +448,79 @@
             </div>
         </div>
 
-        <!-- Custom Toast Alert (Restored from missing section) -->
+        <!-- System Modals -->
+        
+        <!-- Guide Modal (系統使用指南) -->
+        <div id="guideModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden animate-fade-in p-4" onclick="if(event.target===this) window.hideModal('guideModal')">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full flex flex-col max-h-[90vh] relative animate-slide-up">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2"><i class="fas fa-book-open text-primary-600"></i> 六層戰略診斷系統 - 操作指南</h2>
+                        <p class="text-sm text-slate-500 mt-1">麥肯錫等級的商業問題拆解心法，幫助您精準定位、化解阻力並產生高價值。</p>
+                    </div>
+                    <button onclick="window.hideModal('guideModal')" class="text-slate-400 hover:text-slate-700 transition-colors"><i class="fas fa-times text-2xl"></i></button>
+                </div>
+                <div class="p-6 md:p-8 flex-1 overflow-y-auto bg-slate-50/50">
+                    <div class="space-y-6">
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2"><i class="fas fa-bullseye text-primary-500"></i> 01 核心問題 (Problem)</h3>
+                            <p class="text-sm text-slate-600 mb-3"><strong class="text-primary-700">心法：</strong>企業最昂貴的浪費，就是完美地解決了錯誤的問題。</p>
+                            <ul class="list-disc list-outside ml-5 text-sm text-slate-500 space-y-1">
+                                <li><strong class="text-slate-700">怎麼填：</strong>具體描述看到的失敗現象，並挖掘背後的「結構性原因」。</li>
+                                <li><strong class="text-slate-700">關鍵：</strong>必須寫出「急迫性」，如果不馬上解決會引發什麼災難？（決定了老闆要不要現在掏錢）</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2"><i class="fas fa-users-cog text-primary-500"></i> 02 利害關係 (People)</h3>
+                            <p class="text-sm text-slate-600 mb-3"><strong class="text-primary-700">心法：</strong>忽略任何一個關鍵角色，專案隨時可能被推翻。</p>
+                            <ul class="list-disc list-outside ml-5 text-sm text-slate-500 space-y-1">
+                                <li><strong class="text-slate-700">怎麼填：</strong>清楚定義誰用（User）、誰出錢（Buyer）、誰拍板（Decision Maker）。</li>
+                                <li><strong class="text-slate-700">關鍵：</strong>務必盤點出「推行阻力」，誰會因為這個新專案利益受損而暗中破壞？</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2"><i class="fas fa-chart-line text-primary-500"></i> 03 商業價值 (Value)</h3>
+                            <p class="text-sm text-slate-600 mb-3"><strong class="text-primary-700">心法：</strong>老闆只關心這能為公司賺多少錢、省多少成本。</p>
+                            <ul class="list-disc list-outside ml-5 text-sm text-slate-500 space-y-1">
+                                <li><strong class="text-slate-700">怎麼填：</strong>將解決方案翻譯成商業語言（增加營收、降低成本、加快流程、避免風險）。</li>
+                                <li><strong class="text-slate-700">關鍵：</strong>要有對比！請寫出「目前基準值」與「預期目標值」，讓價值可被量化。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2"><i class="fas fa-chess-knight text-primary-500"></i> 04 競爭差異 (Difference)</h3>
+                            <p class="text-sm text-slate-600 mb-3"><strong class="text-primary-700">心法：</strong>如果做法差不多，客戶不願意承受轉換痛苦。</p>
+                            <ul class="list-disc list-outside ml-5 text-sm text-slate-500 space-y-1">
+                                <li><strong class="text-slate-700">怎麼填：</strong>誠實列出客戶「現在」是怎麼解決問題的（替代方案）。</li>
+                                <li><strong class="text-slate-700">關鍵：</strong>找出我們無法被抄襲的「護城河」，並強調如果客戶「維持現狀」會付出的代價。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2"><i class="fas fa-search-dollar text-primary-500"></i> 05 事實證據 (Evidence)</h3>
+                            <p class="text-sm text-slate-600 mb-3"><strong class="text-primary-700">心法：</strong>把幻想當作事實是專案失敗的主因。</p>
+                            <ul class="list-disc list-outside ml-5 text-sm text-slate-500 space-y-1">
+                                <li><strong class="text-slate-700">怎麼填：</strong>嚴格區分「客觀事實」（有數據證明）與「主觀假設」（我們自己認為的）。</li>
+                                <li><strong class="text-slate-700">關鍵：</strong>大膽寫出「關鍵未知」，有哪些變數一旦出錯，整個案子就會毀掉？</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2"><i class="fas fa-rocket text-primary-500"></i> 06 行動驗證 (Action)</h3>
+                            <p class="text-sm text-slate-600 mb-3"><strong class="text-primary-700">心法：</strong>不要在沒有驗證的情況下投入大量資源。</p>
+                            <ul class="list-disc list-outside ml-5 text-sm text-slate-500 space-y-1">
+                                <li><strong class="text-slate-700">怎麼填：</strong>針對上一層的最致命風險，設計一個「最低成本的 MVP 實驗」來測試水溫。</li>
+                                <li><strong class="text-slate-700">關鍵：</strong>給出明確的「成功指標」與「死線 (ETA)」，讓行動可以被追蹤與考核。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6 border-t border-slate-100 bg-white rounded-b-2xl flex justify-end shrink-0">
+                    <button onclick="window.hideModal('guideModal')" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-lg shadow-md font-bold text-sm transition-all">
+                        我明白了，開始撰寫
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Toast Alert -->
         <div id="customAlert" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[9999] hidden">
             <div id="customAlertContent" class="bg-white border-l-4 rounded-lg shadow-2xl p-4 flex items-center gap-3 min-w-[300px]">
                 <i id="customAlertIcon" class="text-xl"></i>
@@ -444,7 +528,7 @@
             </div>
         </div>
 
-        <!-- Upload & Auto-fill Modal -->
+        <!-- Upload Modal -->
         <div id="uploadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden animate-fade-in p-4" onclick="if(event.target===this) window.hideModal('uploadModal')">
             <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[90vh] relative animate-slide-up">
                 <div class="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
@@ -454,7 +538,6 @@
                     </div>
                     <button onclick="window.hideModal('uploadModal')" class="text-slate-400 hover:text-slate-700 transition-colors"><i class="fas fa-times text-xl"></i></button>
                 </div>
-                
                 <div class="p-6 flex-1 overflow-y-auto">
                     <div id="dropZone" class="drop-zone border-2 border-dashed rounded-xl p-8 text-center cursor-pointer mb-6" onclick="document.getElementById('fileInput').click()">
                         <i class="fas fa-file-import text-4xl text-slate-300 mb-3"></i>
@@ -464,14 +547,12 @@
                     </div>
                     <div id="fileListContainer" class="space-y-3"></div>
                 </div>
-
                 <div class="p-6 border-t border-slate-100 bg-slate-50 rounded-b-2xl flex justify-between items-center shrink-0">
                     <span id="fileCountText" class="text-sm font-semibold text-slate-600">已上傳 0 份文件</span>
                     <button onclick="window.startAIAutoFill()" id="btnAutoFill" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg shadow-md font-bold text-sm transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fas fa-magic"></i> AI 智能解析並填入
                     </button>
                 </div>
-                
                 <div id="uploadLoadingOverlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 hidden flex-col items-center justify-center rounded-2xl">
                     <i class="fas fa-circle-notch fa-spin text-indigo-600 text-4xl mb-4"></i>
                     <p class="text-sm font-bold text-slate-700" id="uploadLoadingMsg">AI 正在深度解析文件...</p>
@@ -485,7 +566,6 @@
                 <button onclick="window.hideModal('adminReportModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors"><i class="fas fa-times text-xl"></i></button>
                 <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-robot text-primary-500 mr-2"></i> 產出 AI 營運分析報告</h2>
                 <p class="text-sm text-slate-500 mb-6">請設定要分析的會員註冊與活躍時間區間，系統將調用 Gemini 為您產出洞察報告。</p>
-                
                 <div class="space-y-4 mb-6">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1">起始時間</label>
@@ -521,7 +601,7 @@
                 <button onclick="window.hideModal('profileModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors z-30"><i class="fas fa-times text-xl"></i></button>
                 <div class="px-8 pb-8 flex-1 overflow-y-auto">
                     <div class="pt-16 text-center">
-                        <h2 class="text-2xl font-bold text-slate-900 mb-1">TONY 楊文澤顧問</h2>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-1">TONY 楊文澤 老師</h2>
                         <p class="text-primary-600 text-[13px] font-bold mb-6">資深數位行銷科技顧問 | 生成式 AI 創作者 | 創業導師</p>
                         <div class="space-y-6 text-sm text-slate-600 text-left">
                             <div><h3 class="font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2 mb-3"><i class="fas fa-briefcase text-primary-500 w-5 text-center"></i> 現職 Current</h3><ul class="list-disc list-outside space-y-2 ml-5 text-[13px] leading-relaxed"><li>龍華科大 數位行銷講師</li><li>智策慧 品牌行銷科技顧問</li></ul></div>
@@ -545,20 +625,21 @@
                     <button onclick="window.hideModal('templateModal')" class="text-slate-400 hover:text-slate-600 transition-colors"><i class="fas fa-times text-2xl"></i></button>
                 </div>
                 <div class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-2 pb-2" id="templateListArea"></div>
-    </div>
-</div>
+            </div>
+        </div>
 
-<footer class="bg-white border-t border-slate-200 py-2 sm:py-3 text-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-50 relative">
-    <p class="text-[10px] sm:text-[11px] text-slate-400 font-semibold uppercase tracking-widest px-4">
-        @ 2026 TonyStudio. ALL RIGHTS RESERVED.
-    </p>
-</footer>
-</div> <!-- END OF APP CONTAINER -->
+        <!-- Footer -->
+        <footer class="bg-white border-t border-slate-200 py-2 sm:py-3 text-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-50 relative">
+            <p class="text-[10px] sm:text-[11px] text-slate-400 font-semibold uppercase tracking-widest px-4">
+                @ 2026 TonyStudio. ALL RIGHTS RESERVED.
+            </p>
+        </footer>
+    </div> <!-- END OF APP CONTAINER -->
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signOut, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -607,7 +688,6 @@
         window.showModal = function(id) { document.getElementById(id).classList.remove('hidden'); };
         window.hideModal = function(id) { document.getElementById(id).classList.add('hidden'); };
 
-        // --- STREAMING_CHUNK: Auth Gate ---
         window.switchAuthMode = function(mode) {
             ['login', 'register', 'forgot', 'verify'].forEach(m => document.getElementById(`auth-${m}-form`).classList.add('hidden'));
             document.getElementById(`auth-${mode}-form`).classList.remove('hidden');
@@ -639,12 +719,8 @@
                 await setDoc(profileRef, { uid: user.uid, name: name, identity: identity, email: email, role: role, loginCount: 0, isActive: true, createdAt: Date.now(), lastLoginAt: Date.now() });
                 await signOut(auth); 
                 showAuthLoading(false); 
-                
-                // 將畫面的提示文字更新為用戶輸入的信箱
                 document.getElementById('verifyEmailText').innerHTML = `認證連結已發送至 <br><strong class="text-primary-700 text-base">${email}</strong>`;
-                // 強制切換到驗證提示畫面，而不是跳回登入
                 window.switchAuthMode('verify'); 
-                
             } catch(e) {
                 showAuthLoading(false); let msg = '註冊失敗'; if(e.code === 'auth/email-already-in-use') msg = '此信箱已被註冊'; window.showToast(msg, 'error');
             }
@@ -671,7 +747,6 @@
             await signOut(auth); appState.projects = {}; saveToLocal(); document.getElementById('app-container').classList.add('hidden'); document.getElementById('view-auth').classList.remove('hidden'); window.showToast('已安全登出');
         };
 
-        // --- STREAMING_CHUNK: App Init ---
         async function initApp() {
             loadFromLocal(); 
             try {
@@ -719,7 +794,6 @@
             if(viewId === 'admin' && userProfile && userProfile.role === 'admin') loadAdminData();
         };
 
-        // --- STREAMING_CHUNK: Admin Controls ---
         async function loadAdminData() {
             if(!currentUser || userProfile.role !== 'admin') return;
             try {
@@ -733,8 +807,6 @@
             tbody.innerHTML = adminUsersData.map(u => {
                 const isSuper = u.email === SUPER_ADMIN_EMAIL; 
                 const statusBadge = u.isActive === false ? '<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded text-xs font-bold">已停權</span>' : '';
-                
-                // 動態判斷要顯示「停權」還是「復權」按鈕
                 const toggleStatusBtn = u.isActive === false 
                     ? `<button onclick="window.toggleUserStatus('${u.uid}', false)" ${isSuper?'disabled':''} class="text-emerald-600 hover:text-emerald-800 text-xs font-bold disabled:opacity-30">復權</button>`
                     : `<button onclick="window.toggleUserStatus('${u.uid}', true)" ${isSuper?'disabled':''} class="text-rose-600 hover:text-rose-800 text-xs font-bold disabled:opacity-30">停權</button>`;
@@ -744,19 +816,7 @@
         }
 
         window.toggleUserRole = async function(uid, currentRole) { if(!currentUser || userProfile.role !== 'admin') return; const newRole = currentRole === 'admin' ? 'user' : 'admin'; try { await updateDoc(doc(db, 'artifacts/k28-the-sixlayer/public/data/profiles', uid), { role: newRole }); window.showToast('權限已更新'); loadAdminData(); } catch(e) { window.showToast('更新失敗', 'error'); } };
-        
-        // 升級：切換用戶狀態 (停權/復權)
-        window.toggleUserStatus = async function(uid, currentIsActive) { 
-            if(!currentUser || userProfile.role !== 'admin') return; 
-            const newStatus = !currentIsActive; // 反轉狀態
-            try { 
-                await updateDoc(doc(db, 'artifacts/k28-the-sixlayer/public/data/profiles', uid), { isActive: newStatus }); 
-                window.showToast(newStatus ? '會員已恢復權限，可正常登入' : '會員已停權，該帳號將無法登入', 'success'); 
-                loadAdminData(); 
-            } catch(e) { 
-                window.showToast('狀態更新失敗', 'error'); 
-            } 
-        };
+        window.toggleUserStatus = async function(uid, currentIsActive) { if(!currentUser || userProfile.role !== 'admin') return; const newStatus = !currentIsActive; try { await updateDoc(doc(db, 'artifacts/k28-the-sixlayer/public/data/profiles', uid), { isActive: newStatus }); window.showToast(newStatus ? '會員已恢復權限' : '會員已停權', 'success'); loadAdminData(); } catch(e) { window.showToast('狀態更新失敗', 'error'); } };
 
         window.exportUsersCSV = function() {
             if(adminUsersData.length === 0) return; let csvContent = "\ufeff" + "姓名,Email,身分,權限,登入次數,註冊時間\n";
@@ -770,8 +830,6 @@
             const stats = { period: `${startDate} ~ ${endDate}`, totalNewUsers: filteredUsers.length, roleBreakdown: { tonyStudents: filteredUsers.filter(u => u.identity === 'TONY老師學員').length, visitors: filteredUsers.filter(u => u.identity !== 'TONY老師學員').length }, totalLoginsDuringPeriod: filteredUsers.reduce((sum, u) => sum + (u.loginCount || 0), 0) };
 
             window.hideModal('adminReportModal'); document.getElementById('reportLoadingOverlay').classList.remove('hidden'); document.getElementById('reportLoadingOverlay').classList.add('flex'); document.getElementById('mainLoadingTitle').innerText = 'AI 產出營運報告中';
-
-            // 防呆：去除反引號中的 backticks 字眼
             const sys = "你是一位數據營運長。請根據提供的 JSON 會員數據，撰寫一份專業的「營運分析報告」。包含趨勢、客群結構分析與建議。請直接回傳純 HTML 標籤碼 (使用 h2, p, ul)，絕對不要包含任何 back-ticks 符號。";
             const resHTML = await callGemini(sys, JSON.stringify(stats), false);
             document.getElementById('reportLoadingOverlay').classList.add('hidden'); document.getElementById('reportLoadingOverlay').classList.remove('flex');
@@ -783,7 +841,6 @@
             }
         };
 
-        // --- STREAMING_CHUNK: Core Application Logic ---
         function updateSyncUI(online, saving = false) { const el = document.getElementById('cloudSyncStatus'); if (!el) return; if(!online) el.innerHTML = '<i class="fas fa-cloud-offline text-slate-400 mr-1.5"></i> 本地模式'; else if (saving) el.innerHTML = '<i class="fas fa-spinner fa-spin text-primary-500 mr-1.5"></i> 同步中'; else el.innerHTML = '<i class="fas fa-cloud text-green-500 mr-1.5"></i> 已同步'; }
         window.initTemplates = function() { document.getElementById('templateListArea').innerHTML = TEMPLATES.map((tpl, i) => `<div class="border border-slate-200 rounded-xl p-4 sm:p-5 hover:border-primary-400 hover:shadow-md transition-all cursor-pointer bg-slate-50 group flex flex-col h-full" onclick="window.loadTemplate(${i})"><h3 class="font-bold text-slate-800 text-sm sm:text-base mb-2 group-hover:text-primary-600 transition-colors">${tpl.title}</h3><p class="text-slate-500 text-xs sm:text-sm leading-relaxed flex-1">${tpl.desc}</p></div>`).join(''); };
         window.loadTemplate = function(i) { window.createNewProject(TEMPLATES[i].data, TEMPLATES[i].title); window.hideModal('templateModal'); window.showToast(`已載入範本！`); };
@@ -794,7 +851,7 @@
         window.updateProjectTitle = function(val) { if(appState.currentProjectId && appState.projects[appState.currentProjectId]) { appState.projects[appState.currentProjectId].title = val || "未命名"; appState.projects[appState.currentProjectId].updatedAt = Date.now(); saveToLocal(); debouncedCloudSave(appState.currentProjectId); } };
         window.handleInput = function(stageId, fieldId, value) { const pid = appState.currentProjectId; if(!pid) return; appState.projects[pid].data[stageId][fieldId] = value; appState.projects[pid].updatedAt = Date.now(); saveToLocal(); debouncedCloudSave(pid); };
 
-        function saveToLocal() { const projectsToSave = {}; for (const pid in appState.projects) { projectsToSave[pid] = { ...appState.projects[pid] }; if (projectsToSave[pid].files) projectsToSave[pid].files = projectsToSave[pid].files.map(f => { const { data, ...rest } = f; return rest; }); } try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ projects: projectsToSave })); } catch(e) { console.error("LocalSave Error", e); } }
+        function saveToLocal() { const projectsToSave = {}; for (const pid in appState.projects) { projectsToSave[pid] = { ...appState.projects[pid] }; if (projectsToSave[pid].files) projectsToSave[pid].files = projectsToSave[pid].files.map(f => { const { data, ...rest } = f; return rest; }); } try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ projects: projectsToSave })); } catch(e) {} }
         function loadFromLocal() { const saved = localStorage.getItem(LOCAL_STORAGE_KEY); if (saved) { try { appState.projects = JSON.parse(saved).projects || {}; } catch(e){} } }
 
         let saveTimeout = null;
@@ -846,7 +903,6 @@
             }
         };
 
-        // --- STREAMING_CHUNK: File Handling ---
         function initFileDropZone() { const dropZone = document.getElementById('dropZone'); if(!dropZone) return; dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); }); dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover')); dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); if(e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files); }); }
         window.openUploadModal = function() { renderFileList(); window.showModal('uploadModal'); }; window.handleFileUpload = function(e) { if(e.target.files.length > 0) { handleFiles(e.target.files); e.target.value = ''; } };
 
@@ -894,7 +950,6 @@
             if(res && typeof res === 'object') { DIAGNOSIS_STAGES.forEach(stage => { if(res[stage.id]) stage.fields.forEach(f => { if(res[stage.id][f.id]) appState.projects[pid].data[stage.id][f.id] = res[stage.id][f.id]; }); }); saveToLocal(); debouncedCloudSave(pid); window.hideModal('uploadModal'); renderStage(); window.showToast('✅ 解析完成！'); } else window.showToast('解析失敗。', 'error');
         };
 
-        // --- STREAMING_CHUNK: Reports & Exports ---
         function parseMarkdownToProfessionalHtml(mdText) {
             if (!mdText) return ''; let html = ''; const lines = mdText.split('\n'); let inList = false; let inTable = false;
             const formatText = (text) => text.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #1e3a8a; font-weight: 900; background-color: #f8fafc; padding: 2px 4px; border: 1px solid #e2e8f0; border-radius: 4px;">$1</strong>');
@@ -939,13 +994,13 @@
         };
 
         function renderReportView() {
-    const container = document.getElementById('reportContent'); const proj = appState.projects[appState.currentProjectId];
-    let html = `<div class="report-title-container"><h1>六層戰略診斷報告</h1><div class="meta">${proj.title}</div></div>`;
-    if (proj.aiReportText) html += `<div style="margin-bottom: 60px;">${proj.aiReportText}</div>`;
-    html += `<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 10pt; font-family: 'Inter', sans-serif;">@ 2026 TonyStudio. ALL RIGHTS RESERVED.</div>`;
-    container.innerHTML = html;
-    if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false });
-}
+            const container = document.getElementById('reportContent'); const proj = appState.projects[appState.currentProjectId];
+            let html = `<div class="report-title-container"><h1>六層戰略診斷報告</h1><div class="meta">${proj.title}</div></div>`;
+            if (proj.aiReportText) html += `<div style="margin-bottom: 60px;">${proj.aiReportText}</div>`;
+            html += `<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 10pt; font-family: 'Inter', sans-serif;">@ 2026 TonyStudio. ALL RIGHTS RESERVED.</div>`;
+            container.innerHTML = html;
+            if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false });
+        }
 
         window.exportToWord = function() {
             const projTitle = appState.projects[appState.currentProjectId].title; const contentHTML = document.getElementById('reportContent').innerHTML;
@@ -954,22 +1009,21 @@
         };
 
         window.exportRawDataToWord = function() {
-    const pid = appState.currentProjectId; if (!pid) { window.showToast('無專案資料', 'error'); return; }
-    const proj = appState.projects[pid]; const projTitle = proj.title || "未命名";
-    let contentHTML = `<div style="font-family: '微軟正黑體', sans-serif;"><h1 style="color: #1e3a8a; border-bottom: 3px solid #1e3a8a; padding-bottom: 12px; font-size: 24pt; margin-bottom: 24px;">${projTitle} - 六層原始資料</h1>`;
-    DIAGNOSIS_STAGES.forEach(stage => {
-        contentHTML += `<h2 style="color: #0f172a; margin-top: 32px; font-size: 16pt; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 16px;">${stage.title}</h2>`;
-        stage.fields.forEach(f => {
-            const val = (proj.data[stage.id] || {})[f.id] || '(未填寫)';
-            contentHTML += `<div style="margin-bottom: 20px;"><h3 style="color: #64748b; font-size: 11pt; margin-bottom: 8px;">${f.label}</h3><div style="background-color: #f8fafc; padding: 12px; border-left: 4px solid #94a3b8; font-size: 12pt; white-space: pre-wrap;">${val}</div></div>`;
-        });
-    });
-    contentHTML += `<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 10pt;">@ 2026 TonyStudio. ALL RIGHTS RESERVED.</div></div>`;
-    const wordHTML = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${projTitle}_原始資料</title></head><body>${contentHTML}</body></html>`;
-    const blob = new Blob(['\ufeff', wordHTML], { type: 'application/msword' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `${projTitle}_原始資料.doc`; link.click(); window.showToast('✅ 原始資料下載中...');
-};
+            const pid = appState.currentProjectId; if (!pid) { window.showToast('無專案資料', 'error'); return; }
+            const proj = appState.projects[pid]; const projTitle = proj.title || "未命名";
+            let contentHTML = `<div style="font-family: '微軟正黑體', sans-serif;"><h1 style="color: #1e3a8a; border-bottom: 3px solid #1e3a8a; padding-bottom: 12px; font-size: 24pt; margin-bottom: 24px;">${projTitle} - 六層原始資料</h1>`;
+            DIAGNOSIS_STAGES.forEach(stage => {
+                contentHTML += `<h2 style="color: #0f172a; margin-top: 32px; font-size: 16pt; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 16px;">${stage.title}</h2>`;
+                stage.fields.forEach(f => {
+                    const val = (proj.data[stage.id] || {})[f.id] || '(未填寫)';
+                    contentHTML += `<div style="margin-bottom: 20px;"><h3 style="color: #64748b; font-size: 11pt; margin-bottom: 8px;">${f.label}</h3><div style="background-color: #f8fafc; padding: 12px; border-left: 4px solid #94a3b8; font-size: 12pt; white-space: pre-wrap;">${val}</div></div>`;
+                });
+            });
+            contentHTML += `<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 10pt;">@ 2026 TonyStudio. ALL RIGHTS RESERVED.</div></div>`;
+            const wordHTML = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${projTitle}_原始資料</title></head><body>${contentHTML}</body></html>`;
+            const blob = new Blob(['\ufeff', wordHTML], { type: 'application/msword' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `${projTitle}_原始資料.doc`; link.click(); window.showToast('✅ 原始資料下載中...');
+        };
 
-        // --- STREAMING_CHUNK: Chatbot Logic ---
         function initChatbotDragAndResize() {
             const chatbot = document.getElementById('chatbot-container'); const header = document.getElementById('chatbot-header'); const resizeHandle = document.getElementById('chatbot-resize-handle');
             let isDragging = false, isResizing = false; let startX, startY, startWidth, startHeight, startLeft, startTop;
