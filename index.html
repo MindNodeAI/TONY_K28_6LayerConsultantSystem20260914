@@ -157,6 +157,10 @@
                         <button onclick="window.togglePasswordVis('regPassword', 'regEye')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"><i id="regEye" class="fas fa-eye"></i></button>
                     </div>
                 </div>
+                <div class="bg-emerald-50 border border-emerald-100 p-2.5 rounded-lg text-emerald-800 text-xs flex items-start gap-2">
+                    <i class="fas fa-info-circle mt-0.5 text-emerald-500"></i>
+                    <p>溫馨提醒：註冊確認信有時會跑到「<strong>垃圾郵件匣</strong>」，請記得前往確認唷！</p>
+                </div>
                 <button onclick="window.handleRegister()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all flex justify-center items-center gap-2 mt-2">
                     <i class="fas fa-user-plus"></i> 註冊並發送驗證信
                 </button>
@@ -654,7 +658,7 @@
         let app, db, auth, storage, currentUid = null, isOnline = false, currentUser = null;
         let userProfile = null;
         let adminUsersData = [];
-        const LOCAL_STORAGE_KEY = 'sixLayerEnterprise_v12'; 
+        const LOCAL_STORAGE_KEY = 'sixLayerEnterprise_v13'; 
         const SUPER_ADMIN_EMAIL = 'mindnodeai@gmail.com';
         
         let appState = { apiKey: '', projects: {}, currentProjectId: null, currentStageId: 'problem' };
@@ -665,18 +669,18 @@
         const DIAGNOSIS_STAGES = [
             { id: 'problem', title: '01 核心問題 Problem', icon: 'fa-bullseye', guide: { why: '企業最昂貴的浪費，就是完美地解決了錯誤的問題。', what: '精煉出真正的核心問題，並界定急迫性。', how: '運用《3P 提問法》找出痛點並確認邊界。' }, fields: [ { id: 'phenomenon', label: '觀察到的現象 (Phenomenon)', type: 'textarea', placeholder: '您目前觀察到了什麼具體的失敗現象？' }, { id: 'realProblem', label: '真正的問題 (Core Problem)', type: 'textarea', placeholder: '導致上述現象的根本結構性原因是什麼？' }, { id: 'impactTarget', label: '影響的對象與範圍', type: 'text', placeholder: '這個問題嚴重影響了哪些部門？' }, { id: 'urgency', label: '急迫性原因 (Urgency)', type: 'textarea', placeholder: '如果現在不解決，會立刻引發什麼災難？底線在哪？', hint: '找出壓垮駱駝的最後一根稻草。' } ] },
             { id: 'people', title: '02 利害關係 People', icon: 'fa-users-cog', guide: { why: '忽略任何一個關鍵角色，專案隨時可能被推翻。', what: '畫出決策地圖：誰用？誰買？誰反對？', how: '分析每個角色的切身利益與KPI。' }, fields: [ { id: 'user', label: '實際使用者 (User)', type: 'textarea', placeholder: '誰每天要實際操作這個系統？' }, { id: 'buyer', label: '預算持有者 (Buyer)', type: 'textarea', placeholder: '誰為這個專案出錢？' }, { id: 'decisionMaker', label: '最終決策者 (Decision Maker)', type: 'textarea', placeholder: '誰有最終的生殺大權？' }, { id: 'resistance', label: '推行阻力', type: 'textarea', placeholder: '誰可能因為這個方案受害而暗中阻擋？' } ] },
-            { id: 'value', title: '03 商業價值 Value', icon: 'fa-chart-line', guide: { why: '老闆只關心這能為公司賺多少錢、省多少成本。', what: '定義具體的商業價值主張與目標。', how: '將功能翻譯成增加營收、降低成本等價值。' }, fields: [ { id: 'mainValue', label: '核心價值主張', type: 'textarea', placeholder: '這個方案能帶來什麼終極商業價值？' }, { id: 'valueType', label: '價值分類', type: 'select', options: ['增加營收', '降低成本', '加快流程', '避免風險'] }, { id: 'baseline', label: '目前基準值 (Baseline)', type: 'text', placeholder: '改善前的具體數據為何？' }, { id: 'target', label: '預期目標值 (Target)', type: 'text', placeholder: '預期交付的具體數據為何？' } ] },
+            { id: 'value', title: '03 商業價值 Value', icon: 'fa-chart-line', guide: { why: '老闆只關心這能為公司賺多少錢、省多少成本。', what: '定義具體的商業價值主張與目標。', how: '將功能翻譯成增加營收、降低成本等價值。' }, fields: [ { id: 'mainValue', label: '核心價值主張', type: 'textarea', placeholder: '這個方案能帶來什麼終極商業價值？' }, { id: 'valueType', label: '價值分類 (最多複選兩項)', type: 'checkboxes', options: ['增加營收', '降低成本', '加快流程', '避免風險'], max: 2 }, { id: 'baseline', label: '目前基準值 (Baseline)', type: 'text', placeholder: '改善前的具體數據為何？' }, { id: 'target', label: '預期目標值 (Target)', type: 'text', placeholder: '預期交付的具體數據為何？' } ] },
             { id: 'difference', title: '04 競爭差異 Difference', icon: 'fa-chess-knight', guide: { why: '如果做法差不多，客戶不願意承受轉換痛苦。', what: '找出無法被抄襲的關鍵差異。', how: '誠實評估如果不改變會怎樣。' }, fields: [ { id: 'alternative', label: '目前的替代方案 (Alternative)', type: 'textarea', placeholder: '客戶現在是怎麼解決這問題的？' }, { id: 'keyDiff', label: '我們的護城河 (Key Difference)', type: 'textarea', placeholder: '我們最大的不同在哪？' }, { id: 'costOfInaction', label: '維持現狀的代價 (Cost of Inaction)', type: 'textarea', placeholder: '如果決策者說明年再看看，會面臨什麼災難？' } ] },
             { id: 'evidence', title: '05 事實證據 Evidence', icon: 'fa-search-dollar', guide: { why: '把幻想當作事實是專案失敗的主因。', what: '區分已知事實與美好假設。', how: '要求數據。沒有佐證的都是假設。' }, fields: [ { id: 'facts', label: '客觀事實 (Facts)', type: 'textarea', placeholder: '哪些是已經被數據證明的事實？' }, { id: 'assumptions', label: '主觀假設 (Assumptions)', type: 'textarea', placeholder: '我們相信但還沒被證實的假設是什麼？' }, { id: 'unknowns', label: '關鍵未知 (Unknowns)', type: 'textarea', placeholder: '哪些未知變數可能會摧毀專案？' } ] },
             { id: 'action', title: '06 行動驗證 Action', icon: 'fa-rocket', guide: { why: '不要在沒有驗證的情況下投入大量資源。', what: '設計最低成本的驗證實驗。', how: '確立明確的成功指標與期限。' }, fields: [ { id: 'biggestRisk', label: '最大風險假設', type: 'textarea', placeholder: '哪個假設錯了專案就會失敗？' }, { id: 'mvpTest', label: 'MVP 最小驗證實驗', type: 'textarea', placeholder: '如何用最快的方式驗證這個風險？' }, { id: 'metrics', label: '驗證成功指標 (Metrics)', type: 'text', placeholder: '看到什麼具體數據才啟動專案？' }, { id: 'ownerAndTimeline', label: '負責人與期限 (Owner & ETA)', type: 'text', placeholder: '誰負責執行？死線是何時？' } ] }
         ];
 
         const TEMPLATES = [
-            { title: "企業內部 AI 知識庫導入", desc: "【P1 明確】點出新人痛點。【P2 缺失】刻意未提及預算限制。", data: { problem: { phenomenon: "找一份結案報告平均耗時 2 小時。", realProblem: "內部知識散落，缺乏單一檢索入口。", impactTarget: "新進員工", urgency: "Q4 預計招募 30 人，不解決會影響產能。" }, people: { user: "全體員工", buyer: "HR 總監", decisionMaker: "總經理", resistance: "資深工程師不想寫 SOP" }, value: { mainValue: "讓找資料從 2 小時縮短到 10 秒", valueType: "加快流程", baseline: "找資料 2 小時", target: "找資料 10 秒" }, difference: { alternative: "人工問答", keyDiff: "自然語言提問", costOfInaction: "核心人才離職" }, evidence: { facts: "滿意度調查指出找資料太難", assumptions: "系統建好員工會去問", unknowns: "舊內容是否正確？" }, action: { biggestRisk: "系統建好沒人登入", mvpTest: "先把出勤規定餵給 GPTs", metrics: "自主解決率 > 80%", ownerAndTimeline: "HR 訓練副理，下週一" } } },
-            { title: "電商網站結帳轉換率優化", desc: "【P1 明確】點出掉單現象。【P2 缺失】刻意未提及開發工時。", data: { problem: { phenomenon: "70% 購物車在註冊頁面跳出。", realProblem: "結帳流程要求填寫過多個資。", impactTarget: "電商營運部", urgency: "下個月有大促銷，廣告 CPA 過高。" }, people: { user: "手機購物消費者", buyer: "電商營運總監", decisionMaker: "老闆", resistance: "行銷部堅持要收集完整名單" }, value: { mainValue: "實現無痕結帳，提升流量變現效率。", valueType: "增加營收", baseline: "跳出率 70%", target: "跳出率 40%" }, difference: { alternative: "增加再行銷預算", keyDiff: "Apple Pay / LINE 一鍵結帳", costOfInaction: "廣告 ROI 惡化，營收無法達標" }, evidence: { facts: "錄影顯示多數跳出在密碼欄位", assumptions: "無痕結帳不會影響 LTV", unknowns: "對回購率的實際衝擊？" }, action: { biggestRisk: "無法觸及舊客導致回購崩盤", mvpTest: "A/B 測試 50% 流量至無痕結帳", metrics: "結帳完成率高 15%", ownerAndTimeline: "電商 PM，本週三" } } },
-            { title: "傳統製造業無紙化產線", desc: "【P1 明確】點出良率痛點。【P2 缺失】未說明硬體預算。", data: { problem: { phenomenon: "良率異常到隔天才發現。", realProblem: "現場靠紙本傳遞，缺乏即時預警。", impactTarget: "產線領班", urgency: "客戶要求年底前導入即時履歷。" }, people: { user: "高齡作業員", buyer: "廠長", decisionMaker: "集團董事長", resistance: "作業員怕拖慢速度影響獎金" }, value: { mainValue: "生產數據秒級上雲，建構即時防線。", valueType: "避免風險", baseline: "延遲 4-8 小時", target: "延遲 5 分鐘內" }, difference: { alternative: "增派助理手動輸入", keyDiff: "IoT 直連加上極簡一鍵回報", costOfInaction: "無法通過稽核直接掉單" }, evidence: { facts: "上個月因延遲報廢成本 50 萬", assumptions: "高齡作業員能適應平板", unknowns: "Wi-Fi 訊號是否穩定？" }, action: { biggestRisk: "作業員強烈抗拒", mvpTest: "安裝 2 台防摔平板試跑", metrics: "回報達成率 100%", ownerAndTimeline: "專案室主任，下週一" } } },
-            { title: "SaaS 產品流失率挽救", desc: "【P1 明確】訂閱流失嚴重。【P2 缺失】未指明行銷預算。", data: { problem: { phenomenon: "試用期結束後續訂率跌破 20%。", realProblem: "產品缺乏自動化新手引導。", impactTarget: "Customer Success 團隊", urgency: "獲客成本飆高，現金流緊縮。" }, people: { user: "客戶端主管", buyer: "部門經理", decisionMaker: "營運長", resistance: "RD 不願暫停新功能開發" }, value: { mainValue: "打造沉浸式引導，讓客戶體驗 AHA Moment。", valueType: "增加營收", baseline: "續訂率 20%", target: "續訂率 40%" }, difference: { alternative: "錄製教學影片", keyDiff: "內建互動式導覽", costOfInaction: "陷入漏水水桶效應" }, evidence: { facts: "80% 客戶沒按過建立按鈕", assumptions: "完成引導就會留下", unknowns: "定價是否才是主因？" }, action: { biggestRisk: "開發導覽但客戶不想點", mvpTest: "用 Figma 畫假圖示進行訪談", metrics: "過半客戶覺得有幫助", ownerAndTimeline: "UI/UX 設計師，本週五" } } },
-            { title: "實體零售門市 O2O 轉型", desc: "【P1 明確】門市業績下滑。【P2 缺失】未提及時程壓力。", data: { problem: { phenomenon: "門市客流減少 30%。", realProblem: "線上與線下會員系統未打通。", impactTarget: "門市店長", urgency: "競爭對手已推出掃碼集點。" }, people: { user: "門市店員", buyer: "行銷總監", decisionMaker: "集團總裁", resistance: "店長怕業績被洗到線上" }, value: { mainValue: "線上發券、線下核銷，過客變熟客。", valueType: "增加營收", baseline: "轉換率 0%", target: "核銷率 10%" }, difference: { alternative: "印實體傳單", keyDiff: "LINE OA 輕量系統掃碼綁定", costOfInaction: "失去與年輕世代溝通管道" }, evidence: { facts: "70% 客人不願下載專屬 App", assumptions: "發券能促使客人加 LINE", unknowns: "舊 POS 能否順利串接？" }, action: { biggestRisk: "店長不願推廣", mvpTest: "示範店派人駐點推廣", metrics: "加友核銷率 > 20%", ownerAndTimeline: "行銷部副理，下週五" } } }
+            { title: "企業內部 AI 知識庫導入", desc: "【P1 明確】點出新人痛點。【P2 缺失】刻意未提及預算限制。", data: { problem: { phenomenon: "找一份結案報告平均耗時 2 小時。", realProblem: "內部知識散落，缺乏單一檢索入口。", impactTarget: "新進員工", urgency: "Q4 預計招募 30 人，不解決會影響產能。" }, people: { user: "全體員工", buyer: "HR 總監", decisionMaker: "總經理", resistance: "資深工程師不想寫 SOP" }, value: { mainValue: "讓找資料從 2 小時縮短到 10 秒", valueType: ["加快流程"], baseline: "找資料 2 小時", target: "找資料 10 秒" }, difference: { alternative: "人工問答", keyDiff: "自然語言提問", costOfInaction: "核心人才離職" }, evidence: { facts: "滿意度調查指出找資料太難", assumptions: "系統建好員工會去問", unknowns: "舊內容是否正確？" }, action: { biggestRisk: "系統建好沒人登入", mvpTest: "先把出勤規定餵給 GPTs", metrics: "自主解決率 > 80%", ownerAndTimeline: "HR 訓練副理，下週一" } } },
+            { title: "電商網站結帳轉換率優化", desc: "【P1 明確】點出掉單現象。【P2 缺失】刻意未提及開發工時。", data: { problem: { phenomenon: "70% 購物車在註冊頁面跳出。", realProblem: "結帳流程要求填寫過多個資。", impactTarget: "電商營運部", urgency: "下個月有大促銷，廣告 CPA 過高。" }, people: { user: "手機購物消費者", buyer: "電商營運總監", decisionMaker: "老闆", resistance: "行銷部堅持要收集完整名單" }, value: { mainValue: "實現無痕結帳，提升流量變現效率。", valueType: ["增加營收"], baseline: "跳出率 70%", target: "跳出率 40%" }, difference: { alternative: "增加再行銷預算", keyDiff: "Apple Pay / LINE 一鍵結帳", costOfInaction: "廣告 ROI 惡化，營收無法達標" }, evidence: { facts: "錄影顯示多數跳出在密碼欄位", assumptions: "無痕結帳不會影響 LTV", unknowns: "對回購率的實際衝擊？" }, action: { biggestRisk: "無法觸及舊客導致回購崩盤", mvpTest: "A/B 測試 50% 流量至無痕結帳", metrics: "結帳完成率高 15%", ownerAndTimeline: "電商 PM，本週三" } } },
+            { title: "傳統製造業無紙化產線", desc: "【P1 明確】點出良率痛點。【P2 缺失】未說明硬體預算。", data: { problem: { phenomenon: "良率異常到隔天才發現。", realProblem: "現場靠紙本傳遞，缺乏即時預警。", impactTarget: "產線領班", urgency: "客戶要求年底前導入即時履歷。" }, people: { user: "高齡作業員", buyer: "廠長", decisionMaker: "集團董事長", resistance: "作業員怕拖慢速度影響獎金" }, value: { mainValue: "生產數據秒級上雲，建構即時防線。", valueType: ["避免風險"], baseline: "延遲 4-8 小時", target: "延遲 5 分鐘內" }, difference: { alternative: "增派助理手動輸入", keyDiff: "IoT 直連加上極簡一鍵回報", costOfInaction: "無法通過稽核直接掉單" }, evidence: { facts: "上個月因延遲報廢成本 50 萬", assumptions: "高齡作業員能適應平板", unknowns: "Wi-Fi 訊號是否穩定？" }, action: { biggestRisk: "作業員強烈抗拒", mvpTest: "安裝 2 台防摔平板試跑", metrics: "回報達成率 100%", ownerAndTimeline: "專案室主任，下週一" } } },
+            { title: "SaaS 產品流失率挽救", desc: "【P1 明確】訂閱流失嚴重。【P2 缺失】未指明行銷預算。", data: { problem: { phenomenon: "試用期結束後續訂率跌破 20%。", realProblem: "產品缺乏自動化新手引導。", impactTarget: "Customer Success 團隊", urgency: "獲客成本飆高，現金流緊縮。" }, people: { user: "客戶端主管", buyer: "部門經理", decisionMaker: "營運長", resistance: "RD 不願暫停新功能開發" }, value: { mainValue: "打造沉浸式引導，讓客戶體驗 AHA Moment。", valueType: ["增加營收"], baseline: "續訂率 20%", target: "續訂率 40%" }, difference: { alternative: "錄製教學影片", keyDiff: "內建互動式導覽", costOfInaction: "陷入漏水水桶效應" }, evidence: { facts: "80% 客戶沒按過建立按鈕", assumptions: "完成引導就會留下", unknowns: "定價是否才是主因？" }, action: { biggestRisk: "開發導覽但客戶不想點", mvpTest: "用 Figma 畫假圖示進行訪談", metrics: "過半客戶覺得有幫助", ownerAndTimeline: "UI/UX 設計師，本週五" } } },
+            { title: "實體零售門市 O2O 轉型", desc: "【P1 明確】門市業績下滑。【P2 缺失】未提及時程壓力。", data: { problem: { phenomenon: "門市客流減少 30%。", realProblem: "線上與線下會員系統未打通。", impactTarget: "門市店長", urgency: "競爭對手已推出掃碼集點。" }, people: { user: "門市店員", buyer: "行銷總監", decisionMaker: "集團總裁", resistance: "店長怕業績被洗到線上" }, value: { mainValue: "線上發券、線下核銷，過客變熟客。", valueType: ["增加營收"], baseline: "轉換率 0%", target: "核銷率 10%" }, difference: { alternative: "印實體傳單", keyDiff: "LINE OA 輕量系統掃碼綁定", costOfInaction: "失去與年輕世代溝通管道" }, evidence: { facts: "70% 客人不願下載專屬 App", assumptions: "發券能促使客人加 LINE", unknowns: "舊 POS 能否順利串接？" }, action: { biggestRisk: "店長不願推廣", mvpTest: "示範店派人駐點推廣", metrics: "加友核銷率 > 20%", ownerAndTimeline: "行銷部副理，下週五" } } }
         ];
 
         window.showToast = function(msg, type = 'success') {
@@ -753,7 +757,8 @@
                 app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app); storage = getStorage(app);
                 onAuthStateChanged(auth, async (user) => {
                     showAuthLoading(false);
-                    if (user && (user.emailVerified || user.providerData.some(p => p.providerId === 'google.com'))) {
+                    // 【修復空指標錯誤】：使用 user?.emailVerified 來確保 user 物件存在
+                    if (user && (user?.emailVerified || user?.providerData.some(p => p.providerId === 'google.com'))) {
                         currentUser = user; currentUid = user.uid; isOnline = true;
                         try {
                             const profileRef = doc(db, 'artifacts/k28-the-sixlayer/public/data/profiles', user.uid); const profileSnap = await getDoc(profileRef);
@@ -851,6 +856,31 @@
         window.updateProjectTitle = function(val) { if(appState.currentProjectId && appState.projects[appState.currentProjectId]) { appState.projects[appState.currentProjectId].title = val || "未命名"; appState.projects[appState.currentProjectId].updatedAt = Date.now(); saveToLocal(); debouncedCloudSave(appState.currentProjectId); } };
         window.handleInput = function(stageId, fieldId, value) { const pid = appState.currentProjectId; if(!pid) return; appState.projects[pid].data[stageId][fieldId] = value; appState.projects[pid].updatedAt = Date.now(); saveToLocal(); debouncedCloudSave(pid); };
 
+        // --- 核心更新：複選框的處理邏輯 ---
+        window.handleCheckboxInput = function(stageId, fieldId, value, isChecked, max) {
+            const pid = appState.currentProjectId;
+            if(!pid) return;
+            let currentVals = appState.projects[pid].data[stageId][fieldId];
+            if (!Array.isArray(currentVals)) currentVals = currentVals ? [currentVals] : [];
+            
+            if (isChecked) {
+                if (max && currentVals.length >= max) {
+                    window.showToast(`最多只能選擇 ${max} 項`, 'error');
+                    renderStage(); // 重繪 UI 以取消勾選
+                    return;
+                }
+                currentVals.push(value);
+            } else {
+                currentVals = currentVals.filter(v => v !== value);
+            }
+            
+            appState.projects[pid].data[stageId][fieldId] = currentVals;
+            appState.projects[pid].updatedAt = Date.now();
+            saveToLocal(); 
+            debouncedCloudSave(pid);
+            renderStage(); // 更新按鈕顏色
+        };
+
         function saveToLocal() { const projectsToSave = {}; for (const pid in appState.projects) { projectsToSave[pid] = { ...appState.projects[pid] }; if (projectsToSave[pid].files) projectsToSave[pid].files = projectsToSave[pid].files.map(f => { const { data, ...rest } = f; return rest; }); } try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ projects: projectsToSave })); } catch(e) {} }
         function loadFromLocal() { const saved = localStorage.getItem(LOCAL_STORAGE_KEY); if (saved) { try { appState.projects = JSON.parse(saved).projects || {}; } catch(e){} } }
 
@@ -866,7 +896,7 @@
 
         window.optimizeCurrentStageWith3P = async function() {
             const pid = appState.currentProjectId; const stage = DIAGNOSIS_STAGES.find(s => s.id === appState.currentStageId); const currentData = appState.projects[pid].data[stage.id];
-            if(!currentData || !Object.values(currentData).some(v => v.trim() !== '')) { window.showToast('請先填寫一些內容才能進行 3P 優化', 'error'); return; }
+            if(!currentData || !Object.values(currentData).some(v => v.trim() !== '' && v.length !== 0)) { window.showToast('請先填寫一些內容才能進行 3P 優化', 'error'); return; }
             document.getElementById('mainLoadingTitle').innerText = '✨ 3P 提問法優化中'; document.getElementById('mainLoadingDesc').innerText = 'AI 顧問正在為您重構內容...'; document.getElementById('reportLoadingOverlay').classList.remove('hidden'); document.getElementById('reportLoadingOverlay').classList.add('flex');
             const fieldKeys = stage.fields.map(f => f.id); const sys = `你是一位麥肯錫戰略顧問。請用《3P 提問法》優化使用者在【${stage.title}】填寫的內容。請回傳 JSON 物件，key 對應：[${fieldKeys.join(', ')}]。請勿回傳 JSON 以外的任何文字。`;
             const res = await callGemini(sys, JSON.stringify(currentData), true); document.getElementById('reportLoadingOverlay').classList.add('hidden'); document.getElementById('reportLoadingOverlay').classList.remove('flex');
@@ -877,8 +907,38 @@
             const container = document.getElementById('dynamicContentArea'); const stage = DIAGNOSIS_STAGES.find(s => s.id === appState.currentStageId); const data = appState.projects[appState.currentProjectId].data[stage.id] || {};
             let html = `<div class="mb-6 md:mb-8 animate-fade-in flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><h2 class="text-3xl md:text-4xl font-black text-slate-800 flex items-center gap-4"><i class="fas ${stage.icon} text-primary-600 bg-primary-50 p-3 rounded-2xl shadow-sm border border-primary-100"></i> ${stage.title}</h2><button onclick="window.optimizeCurrentStageWith3P()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-md transition-all flex items-center gap-2 text-sm shrink-0"><i class="fas fa-magic"></i> 3P 智能優化本層</button></div><div class="space-y-6 animate-slide-up pb-10">`;
             stage.fields.forEach(f => {
-                const val = data[f.id] || ''; html += `<div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm focus-within:border-primary-400 focus-within:shadow-md transition-all group"><label class="block text-sm font-bold text-slate-800 mb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2"><span class="text-base">${f.label}</span>${f.hint ? `<span class="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 font-medium"><i class="fas fa-bolt"></i> ${f.hint}</span>` : ''}</label>${f.type === 'textarea' ? `<textarea rows="4" class="form-input resize-y text-sm leading-relaxed" placeholder="${f.placeholder}" oninput="window.handleInput('${stage.id}', '${f.id}', this.value)">${val}</textarea>` : f.type === 'select' ? `<select class="form-input text-sm" onchange="window.handleInput('${stage.id}', '${f.id}', this.value)"><option value="">請選擇...</option>${f.options.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('')}</select>` : `<input type="text" class="form-input text-sm" placeholder="${f.placeholder}" value="${val}" oninput="window.handleInput('${stage.id}', '${f.id}', this.value)">`}</div>`;
-            }); html += `</div>`; container.innerHTML = html;
+                const rawVal = data[f.id];
+                const strVal = Array.isArray(rawVal) ? rawVal.join(', ') : (rawVal || '');
+                html += `<div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm focus-within:border-primary-400 focus-within:shadow-md transition-all group">
+                    <label class="block text-sm font-bold text-slate-800 mb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                        <span class="text-base">${f.label}</span>
+                        ${f.hint ? `<span class="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 font-medium"><i class="fas fa-bolt"></i> ${f.hint}</span>` : ''}
+                    </label>`;
+                if (f.type === 'textarea') {
+                    html += `<textarea rows="4" class="form-input resize-y text-sm leading-relaxed" placeholder="${f.placeholder}" oninput="window.handleInput('${stage.id}', '${f.id}', this.value)">${strVal}</textarea>`;
+                } else if (f.type === 'select') {
+                    html += `<select class="form-input text-sm" onchange="window.handleInput('${stage.id}', '${f.id}', this.value)"><option value="">請選擇...</option>${f.options.map(o => `<option value="${o}" ${strVal === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
+                } else if (f.type === 'checkboxes') {
+                    const selectedVals = Array.isArray(rawVal) ? rawVal : (rawVal ? [rawVal] : []);
+                    html += `<div class="flex flex-wrap gap-3 mt-1">`;
+                    f.options.forEach(o => {
+                        const isChecked = selectedVals.includes(o);
+                        html += `
+                            <label class="flex items-center gap-2 cursor-pointer border ${isChecked ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-slate-200 bg-slate-50 text-slate-600'} hover:border-primary-300 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all select-none shadow-sm">
+                                <input type="checkbox" class="hidden" value="${o}" ${isChecked ? 'checked' : ''} 
+                                       onchange="window.handleCheckboxInput('${stage.id}', '${f.id}', this.value, this.checked, ${f.max || 0})">
+                                <i class="fas ${isChecked ? 'fa-check-square text-primary-600' : 'fa-square text-slate-300'} text-lg"></i>
+                                ${o}
+                            </label>
+                        `;
+                    });
+                    html += `</div>`;
+                } else {
+                    html += `<input type="text" class="form-input text-sm" placeholder="${f.placeholder}" value="${strVal}" oninput="window.handleInput('${stage.id}', '${f.id}', this.value)">`;
+                }
+                html += `</div>`;
+            });
+            html += `</div>`; container.innerHTML = html;
         }
 
         window.saveKey = function() { const key = document.getElementById('apiKeyInput').value.trim(); if(key) { appState.apiKey = key; window.showToast('API Key 已設定'); } else { appState.apiKey = ""; window.showToast('已清除 Key，將使用系統底層額度', 'success'); } };
@@ -1015,7 +1075,8 @@
             DIAGNOSIS_STAGES.forEach(stage => {
                 contentHTML += `<h2 style="color: #0f172a; margin-top: 32px; font-size: 16pt; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 16px;">${stage.title}</h2>`;
                 stage.fields.forEach(f => {
-                    const val = (proj.data[stage.id] || {})[f.id] || '(未填寫)';
+                    const rawVal = (proj.data[stage.id] || {})[f.id];
+                    const val = Array.isArray(rawVal) ? rawVal.join('、') : (rawVal || '(未填寫)');
                     contentHTML += `<div style="margin-bottom: 20px;"><h3 style="color: #64748b; font-size: 11pt; margin-bottom: 8px;">${f.label}</h3><div style="background-color: #f8fafc; padding: 12px; border-left: 4px solid #94a3b8; font-size: 12pt; white-space: pre-wrap;">${val}</div></div>`;
                 });
             });
