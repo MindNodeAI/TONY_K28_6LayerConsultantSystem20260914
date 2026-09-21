@@ -515,7 +515,7 @@
                             </ul>
                         </div>
 
-                        <!-- 新增：核心方法論參考區塊 -->
+                        <!-- 核心方法論參考區塊 -->
                         <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-md mt-6 relative overflow-hidden">
                             <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fas fa-brain text-6xl text-white"></i></div>
                             <h3 class="text-lg font-bold text-white mb-5 flex items-center gap-2 relative z-10"><i class="fas fa-lightbulb text-amber-400"></i> 核心方法論參考 (Core Methodologies)</h3>
@@ -570,8 +570,6 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- 新增結束 -->
-
                     </div>
                 </div>
                 <div class="p-6 border-t border-slate-100 bg-white rounded-b-2xl flex justify-end shrink-0">
@@ -716,7 +714,7 @@
         let app, db, auth, storage, currentUid = null, isOnline = false, currentUser = null;
         let userProfile = null;
         let adminUsersData = [];
-        const LOCAL_STORAGE_KEY = 'sixLayerEnterprise_v13'; 
+        const LOCAL_STORAGE_KEY = 'sixLayerEnterprise_v14'; // 更新緩存金鑰
         const SUPER_ADMIN_EMAIL = 'mindnodeai@gmail.com';
         
         let appState = { apiKey: '', projects: {}, currentProjectId: null, currentStageId: 'problem' };
@@ -727,7 +725,7 @@
         const DIAGNOSIS_STAGES = [
             { id: 'problem', title: '01 核心問題 Problem', icon: 'fa-bullseye', guide: { why: '企業最昂貴的浪費，就是完美地解決了錯誤的問題。', what: '精煉出真正的核心問題，並界定急迫性。', how: '運用《3P 提問法》找出痛點並確認邊界。' }, fields: [ { id: 'phenomenon', label: '觀察到的現象 (Phenomenon)', type: 'textarea', placeholder: '您目前觀察到了什麼具體的失敗現象？' }, { id: 'realProblem', label: '真正的問題 (Core Problem)', type: 'textarea', placeholder: '導致上述現象的根本結構性原因是什麼？' }, { id: 'impactTarget', label: '影響的對象與範圍', type: 'text', placeholder: '這個問題嚴重影響了哪些部門？' }, { id: 'urgency', label: '急迫性原因 (Urgency)', type: 'textarea', placeholder: '如果現在不解決，會立刻引發什麼災難？底線在哪？', hint: '找出壓垮駱駝的最後一根稻草。' } ] },
             { id: 'people', title: '02 利害關係 People', icon: 'fa-users-cog', guide: { why: '忽略任何一個關鍵角色，專案隨時可能被推翻。', what: '畫出決策地圖：誰用？誰買？誰反對？', how: '分析每個角色的切身利益與KPI。' }, fields: [ { id: 'user', label: '實際使用者 (User)', type: 'textarea', placeholder: '誰每天要實際操作這個系統？' }, { id: 'buyer', label: '預算持有者 (Buyer)', type: 'textarea', placeholder: '誰為這個專案出錢？' }, { id: 'decisionMaker', label: '最終決策者 (Decision Maker)', type: 'textarea', placeholder: '誰有最終的生殺大權？' }, { id: 'resistance', label: '推行阻力', type: 'textarea', placeholder: '誰可能因為這個方案受害而暗中阻擋？' } ] },
-            { id: 'value', title: '03 商業價值 Value', icon: 'fa-chart-line', guide: { why: '老闆只關心這能為公司賺多少錢、省多少成本。', what: '定義具體的商業價值主張與目標。', how: '將功能翻譯成增加營收、降低成本等價值。' }, fields: [ { id: 'mainValue', label: '核心價值主張', type: 'textarea', placeholder: '這個方案能帶來什麼終極商業價值？' }, { id: 'valueType', label: '價值分類 (最多複選兩項)', type: 'checkboxes', options: ['增加營收', '降低成本', '加快流程', '避免風險'], max: 2 }, { id: 'baseline', label: '目前基準值 (Baseline)', type: 'text', placeholder: '改善前的具體數據為何？' }, { id: 'target', label: '預期目標值 (Target)', type: 'text', placeholder: '預期交付的具體數據為何？' } ] },
+            { id: 'value', title: '03 商業價值 Value', icon: 'fa-chart-line', guide: { why: '老闆只關心這能為公司賺多少錢、省多少成本。', what: '定義具體的商業價值主張與目標。', how: '將功能翻譯成增加營收、降低成本等價值。' }, fields: [ { id: 'mainValue', label: '核心價值主張', type: 'textarea', placeholder: '這個方案能帶來什麼終極商業價值？' }, { id: 'valueType', label: '價值分類 (由AI智能判斷)', type: 'checkboxes', options: ['增加營收', '降低成本', '加快流程', '避免風險'], max: 2 }, { id: 'baseline', label: '目前基準值 (Baseline)', type: 'text', placeholder: '改善前的具體數據為何？' }, { id: 'target', label: '預期目標值 (Target)', type: 'text', placeholder: '預期交付的具體數據為何？' } ] },
             { id: 'difference', title: '04 競爭差異 Difference', icon: 'fa-chess-knight', guide: { why: '如果做法差不多，客戶不願意承受轉換痛苦。', what: '找出無法被抄襲的關鍵差異。', how: '誠實評估如果不改變會怎樣。' }, fields: [ { id: 'alternative', label: '目前的替代方案 (Alternative)', type: 'textarea', placeholder: '客戶現在是怎麼解決這問題的？' }, { id: 'keyDiff', label: '我們的護城河 (Key Difference)', type: 'textarea', placeholder: '我們最大的不同在哪？' }, { id: 'costOfInaction', label: '維持現狀的代價 (Cost of Inaction)', type: 'textarea', placeholder: '如果決策者說明年再看看，會面臨什麼災難？' } ] },
             { id: 'evidence', title: '05 事實證據 Evidence', icon: 'fa-search-dollar', guide: { why: '把幻想當作事實是專案失敗的主因。', what: '區分已知事實與美好假設。', how: '要求數據。沒有佐證的都是假設。' }, fields: [ { id: 'facts', label: '客觀事實 (Facts)', type: 'textarea', placeholder: '哪些是已經被數據證明的事實？' }, { id: 'assumptions', label: '主觀假設 (Assumptions)', type: 'textarea', placeholder: '我們相信但還沒被證實的假設是什麼？' }, { id: 'unknowns', label: '關鍵未知 (Unknowns)', type: 'textarea', placeholder: '哪些未知變數可能會摧毀專案？' } ] },
             { id: 'action', title: '06 行動驗證 Action', icon: 'fa-rocket', guide: { why: '不要在沒有驗證的情況下投入大量資源。', what: '設計最低成本的驗證實驗。', how: '確立明確的成功指標與期限。' }, fields: [ { id: 'biggestRisk', label: '最大風險假設', type: 'textarea', placeholder: '哪個假設錯了專案就會失敗？' }, { id: 'mvpTest', label: 'MVP 最小驗證實驗', type: 'textarea', placeholder: '如何用最快的方式驗證這個風險？' }, { id: 'metrics', label: '驗證成功指標 (Metrics)', type: 'text', placeholder: '看到什麼具體數據才啟動專案？' }, { id: 'ownerAndTimeline', label: '負責人與期限 (Owner & ETA)', type: 'text', placeholder: '誰負責執行？死線是何時？' } ] }
@@ -914,29 +912,43 @@
         window.updateProjectTitle = function(val) { if(appState.currentProjectId && appState.projects[appState.currentProjectId]) { appState.projects[appState.currentProjectId].title = val || "未命名"; appState.projects[appState.currentProjectId].updatedAt = Date.now(); saveToLocal(); debouncedCloudSave(appState.currentProjectId); } };
         window.handleInput = function(stageId, fieldId, value) { const pid = appState.currentProjectId; if(!pid) return; appState.projects[pid].data[stageId][fieldId] = value; appState.projects[pid].updatedAt = Date.now(); saveToLocal(); debouncedCloudSave(pid); };
 
-        // --- 核心更新：複選框的處理邏輯 ---
-        window.handleCheckboxInput = function(stageId, fieldId, value, isChecked, max) {
+        // --- 核心更新：徹底解決複選框單選問題 (防呆、純陣列控制、即時渲染) ---
+        window.toggleCheckbox = function(stageId, fieldId, value, max) {
             const pid = appState.currentProjectId;
-            if(!pid) return;
-            let currentVals = appState.projects[pid].data[stageId][fieldId];
-            if (!Array.isArray(currentVals)) currentVals = currentVals ? [currentVals] : [];
+            if(!pid || !appState.projects[pid] || !appState.projects[pid].data[stageId]) return;
             
-            if (isChecked) {
-                if (max && currentVals.length >= max) {
-                    window.showToast(`最多只能選擇 ${max} 項`, 'error');
-                    renderStage(); // 重繪 UI 以取消勾選
-                    return;
-                }
-                currentVals.push(value);
-            } else {
-                currentVals = currentVals.filter(v => v !== value);
+            let rawVal = appState.projects[pid].data[stageId][fieldId];
+            let currentVals = [];
+            
+            // 防呆處理：確保舊版字串能被解析為陣列
+            if (Array.isArray(rawVal)) {
+                currentVals = Array.from(rawVal); // 深拷貝陣列
+            } else if (typeof rawVal === 'string' && rawVal.trim() !== '') {
+                currentVals = rawVal.split(',').map(s => s.trim()).filter(s => s !== '');
             }
             
+            const index = currentVals.indexOf(value);
+            if (index > -1) {
+                currentVals.splice(index, 1); // 存在則移除 (取消勾選)
+            } else {
+                if (max && currentVals.length >= max) {
+                    window.showToast(`最多只能選擇 ${max} 項`, 'error');
+                    return;
+                }
+                currentVals.push(value); // 不存在則加入 (勾選)
+            }
+            
+            // 強制覆寫並更新時間戳
             appState.projects[pid].data[stageId][fieldId] = currentVals;
             appState.projects[pid].updatedAt = Date.now();
+            
             saveToLocal(); 
             debouncedCloudSave(pid);
-            renderStage(); // 更新按鈕顏色
+            
+            // 使用 requestAnimationFrame 確保 DOM 更新不會中斷事件流
+            requestAnimationFrame(() => {
+                renderStage(); 
+            });
         };
 
         function saveToLocal() { const projectsToSave = {}; for (const pid in appState.projects) { projectsToSave[pid] = { ...appState.projects[pid] }; if (projectsToSave[pid].files) projectsToSave[pid].files = projectsToSave[pid].files.map(f => { const { data, ...rest } = f; return rest; }); } try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ projects: projectsToSave })); } catch(e) {} }
@@ -961,33 +973,93 @@
             if(res && typeof res === 'object') { fieldKeys.forEach(k => { if(res[k]) appState.projects[pid].data[stage.id][k] = res[k]; }); saveToLocal(); debouncedCloudSave(pid); renderStage(); window.showToast('✅ 3P 內容優化完成！'); } else window.showToast('優化失敗，請重試', 'error');
         };
 
+        // --- 新增：AI 智能判斷價值分類 ---
+        window.aiPredictValueType = async function(stageId, fieldId) {
+            const pid = appState.currentProjectId;
+            const data = appState.projects[pid].data[stageId];
+            const mainValue = data.mainValue || '';
+            
+            if (!mainValue.trim()) {
+                window.showToast('請先填寫上方的「核心價值主張」，AI 才能進行判斷喔！', 'error');
+                return;
+            }
+
+            document.getElementById('reportLoadingOverlay').classList.remove('hidden'); 
+            document.getElementById('reportLoadingOverlay').classList.add('flex');
+            document.getElementById('mainLoadingTitle').innerText = '✨ AI 智能判斷中'; 
+            document.getElementById('mainLoadingDesc').innerText = '正在分析您的價值主張，為您挑選最適合的分類...';
+
+            const sys = `你是一位精準的商業分析師。
+            請閱讀以下使用者的「核心價值主張」：
+            「${mainValue}」
+            
+            請從以下四個選項中，挑選出最符合此主張的 1 到 2 個項目：
+            ["增加營收", "降低成本", "加快流程", "避免風險"]
+            
+            必須嚴格回傳 JSON 陣列格式，例如：["增加營收", "加快流程"]。
+            請勿回傳 JSON 以外的任何文字。`;
+
+            try {
+                const res = await callGemini(sys, "請判斷", true);
+                if (Array.isArray(res) && res.length > 0) {
+                    appState.projects[pid].data[stageId][fieldId] = res.slice(0, 2); // 確保最多只拿兩個
+                    appState.projects[pid].updatedAt = Date.now();
+                    saveToLocal(); 
+                    debouncedCloudSave(pid);
+                    renderStage();
+                    window.showToast('✅ AI 判斷完成！');
+                } else {
+                    window.showToast('判斷失敗，格式錯誤', 'error');
+                }
+            } catch(e) {
+                window.showToast('判斷失敗，請重試', 'error');
+            } finally {
+                document.getElementById('reportLoadingOverlay').classList.add('hidden'); 
+                document.getElementById('reportLoadingOverlay').classList.remove('flex');
+            }
+        };
+
         function renderStage() {
             const container = document.getElementById('dynamicContentArea'); const stage = DIAGNOSIS_STAGES.find(s => s.id === appState.currentStageId); const data = appState.projects[appState.currentProjectId].data[stage.id] || {};
             let html = `<div class="mb-6 md:mb-8 animate-fade-in flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><h2 class="text-3xl md:text-4xl font-black text-slate-800 flex items-center gap-4"><i class="fas ${stage.icon} text-primary-600 bg-primary-50 p-3 rounded-2xl shadow-sm border border-primary-100"></i> ${stage.title}</h2><button onclick="window.optimizeCurrentStageWith3P()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-md transition-all flex items-center gap-2 text-sm shrink-0"><i class="fas fa-magic"></i> 3P 智能優化本層</button></div><div class="space-y-6 animate-slide-up pb-10">`;
             stage.fields.forEach(f => {
                 const rawVal = data[f.id];
                 const strVal = Array.isArray(rawVal) ? rawVal.join(', ') : (rawVal || '');
+                
+                // 新增：只有在價值分類時，顯示 AI 智能判斷按鈕
+                const aiBtnHtml = (f.id === 'valueType') ? `<button type="button" onclick="window.aiPredictValueType('${stage.id}', '${f.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-1 px-3 rounded-full flex items-center gap-1.5 transition-colors shadow-sm shrink-0"><i class="fas fa-magic"></i> AI 智能判斷</button>` : '';
+
                 html += `<div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm focus-within:border-primary-400 focus-within:shadow-md transition-all group">
-                    <label class="block text-sm font-bold text-slate-800 mb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                        <span class="text-base">${f.label}</span>
-                        ${f.hint ? `<span class="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 font-medium"><i class="fas fa-bolt"></i> ${f.hint}</span>` : ''}
-                    </label>`;
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-bold text-slate-800 flex items-center gap-2">
+                            <span class="text-base">${f.label}</span>
+                            ${f.hint ? `<span class="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 font-medium"><i class="fas fa-bolt"></i> ${f.hint}</span>` : ''}
+                        </label>
+                        ${aiBtnHtml}
+                    </div>`;
+                    
                 if (f.type === 'textarea') {
                     html += `<textarea rows="4" class="form-input resize-y text-sm leading-relaxed" placeholder="${f.placeholder}" oninput="window.handleInput('${stage.id}', '${f.id}', this.value)">${strVal}</textarea>`;
                 } else if (f.type === 'select') {
                     html += `<select class="form-input text-sm" onchange="window.handleInput('${stage.id}', '${f.id}', this.value)"><option value="">請選擇...</option>${f.options.map(o => `<option value="${o}" ${strVal === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
                 } else if (f.type === 'checkboxes') {
-                    const selectedVals = Array.isArray(rawVal) ? rawVal : (rawVal ? [rawVal] : []);
+                    let selectedVals = [];
+                    // 確保渲染時也能正確解析舊資料
+                    if (Array.isArray(rawVal)) {
+                        selectedVals = rawVal;
+                    } else if (typeof rawVal === 'string' && rawVal.trim() !== '') {
+                        selectedVals = rawVal.split(',').map(s => s.trim());
+                    }
+                    
                     html += `<div class="flex flex-wrap gap-3 mt-1">`;
                     f.options.forEach(o => {
                         const isChecked = selectedVals.includes(o);
                         html += `
-                            <label class="flex items-center gap-2 cursor-pointer border ${isChecked ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-slate-200 bg-slate-50 text-slate-600'} hover:border-primary-300 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all select-none shadow-sm">
-                                <input type="checkbox" class="hidden" value="${o}" ${isChecked ? 'checked' : ''} 
-                                       onchange="window.handleCheckboxInput('${stage.id}', '${f.id}', this.value, this.checked, ${f.max || 0})">
+                            <button type="button" onclick="window.toggleCheckbox('${stage.id}', '${f.id}', '${o}', ${f.max || 0})" 
+                                class="flex items-center gap-2 border ${isChecked ? 'border-primary-500 bg-primary-50 text-primary-700 shadow-sm' : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-primary-300 hover:bg-white'} px-4 py-2.5 rounded-xl text-sm font-semibold transition-all select-none focus:outline-none focus:ring-2 focus:ring-primary-200">
                                 <i class="fas ${isChecked ? 'fa-check-square text-primary-600' : 'fa-square text-slate-300'} text-lg"></i>
-                                ${o}
-                            </label>
+                                <span>${o}</span>
+                            </button>
                         `;
                     });
                     html += `</div>`;
