@@ -1075,10 +1075,69 @@
         window.toggleKey = function() { const el = document.getElementById('apiKeyInput'); const ic = document.getElementById('keyIcon'); if(el.type === 'password') { el.type = 'text'; ic.className = 'fas fa-eye-slash text-xs'; } else { el.type = 'password'; ic.className = 'fas fa-eye text-xs'; } };
 
         async function callGemini(sysPrompt, userContent, isJson, fileParts = []) {
-            const model = "gemini-3.8-flash"; const key = appState.apiKey || "AIzaSyDTSfcjoo5Aiv4EsnMTZ28fFah1Y56WnUg"; const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-            let parts = []; if(typeof userContent === 'string') parts.push({ text: userContent }); if(fileParts && fileParts.length > 0) parts = parts.concat(fileParts);
-            let payload = { contents: [{ role: "user", parts: parts }], systemInstruction: { parts: [{ text: sysPrompt }] } }; if (isJson) payload.generationConfig = { responseMimeType: "application/json" };
-            try { const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); if (!res.ok) throw new Error(`API Error`); const data = await res.json(); const text = data.candidates[0].content.parts[0].text; return isJson ? JSON.parse(text) : text; } catch (e) { window.showToast(`連線失敗，請檢查金鑰或網路`, 'error'); return null; }
+            let parts = []; 
+            if(typeof userContent === 'string') parts.push({ text: userContent }); 
+            if(fileParts && fileParts.length > 0) parts = parts.concat(fileParts);
+            
+            let payload = { contents: [{ role: "user", parts: parts }], systemInstruction: { parts: [{ text: sysPrompt }] } }; 
+            if (isJson) payload.generationConfig = { responseMimeType: "application/json" };
+            
+            const key = appState.apiKey || "AIzaSyDTSfcjoo5Aiv4EsnMTZ28fFah1Y56WnUg";
+            const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+            const maxRetries = 3;
+            let attempt = 1;
+            let currentModel = "gemini-3.8-flash";
+
+            while (attempt <= maxRetries + 1) {
+                try {
+                    // 第 4 次嘗試 (超過 maxRetries)，觸發自動模型備援
+                    if (attempt === maxRetries + 1) {
+                        currentModel = "gemini-3.5-flash"; // 備援模型
+                        window.showToast('系統滿載，已切換至備援模型執行', 'success');
+                    }
+
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${key}`;
+                    const res = await fetch(url, { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify(payload) 
+                    });
+
+                    if (!res.ok) {
+                        // 1. 處理致命錯誤 (不重試，立即中斷)
+                        if (res.status === 400 || res.status === 401 || res.status === 403) {
+                            throw new Error(`API 參數或授權錯誤 (${res.status})`);
+                        }
+                        
+                        // 2. 處理 429 頻率限制 (執行指數輪詢重試)
+                        if (res.status === 429) {
+                            if (attempt <= maxRetries) {
+                                const delaySeconds = Math.pow(2, attempt); // 呈指數遞增：2秒、4秒、8秒
+                                window.showToast(`伺服器忙碌中，正在進行第 ${attempt} 次重試... (${delaySeconds}秒後)`, 'error');
+                                await sleep(delaySeconds * 1000);
+                                attempt++;
+                                continue; // 重新執行 while 迴圈
+                            } else {
+                                throw new Error('備援模型亦滿載，請稍後再試 (429)');
+                            }
+                        }
+                        
+                        // 3. 處理其他伺服器錯誤 (5xx，不納入重試範圍)
+                        throw new Error(`伺服器無法回應 (${res.status})`);
+                    }
+
+                    const data = await res.json();
+                    const text = data.candidates[0].content.parts[0].text;
+                    return isJson ? JSON.parse(text) : text;
+
+                } catch (e) {
+                    // 如果 catch 到 Error，直接印出錯誤並中斷迴圈返回 null
+                    console.error("Gemini API Error:", e);
+                    window.showToast(`連線失敗：${e.message || '請檢查網路連線'}`, 'error');
+                    return null;
+                }
+            }
+            return null;
         }
 
         window.triggerAI = async function(action) {
