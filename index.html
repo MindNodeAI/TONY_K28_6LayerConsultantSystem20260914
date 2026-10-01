@@ -691,7 +691,7 @@
         <!-- Footer -->
         <footer class="bg-white border-t border-slate-200 py-2 sm:py-3 text-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-50 relative">
             <p class="text-[10px] sm:text-[11px] text-slate-400 font-semibold uppercase tracking-widest px-4">
-                @ 2026 TonyStudio. ALL RIGHTS RESERVED.
+                @2020 TonyStudio (TONY 楊文澤顧問). ALL RIGHTS RESERVED.
             </p>
         </footer>
     </div> <!-- END OF APP CONTAINER -->
@@ -714,7 +714,7 @@
         let app, db, auth, storage, currentUid = null, isOnline = false, currentUser = null;
         let userProfile = null;
         let adminUsersData = [];
-        const LOCAL_STORAGE_KEY = 'sixLayerEnterprise_v14'; // 更新緩存金鑰
+        const LOCAL_STORAGE_KEY = 'sixLayerEnterprise_v15'; // Updated Cache Key
         const SUPER_ADMIN_EMAIL = 'mindnodeai@gmail.com';
         
         let appState = { apiKey: '', projects: {}, currentProjectId: null, currentStageId: 'problem' };
@@ -763,7 +763,8 @@
         window.loginWithGoogle = async function() {
             const provider = new GoogleAuthProvider(); showAuthLoading(true);
             try { await signInWithPopup(auth, provider); window.showToast('Google 登入成功！'); } 
-            catch(e) { showAuthLoading(false); window.showToast('Google 登入失敗', 'error'); }
+            catch(e) { window.showToast('Google 登入失敗', 'error'); }
+            finally { showAuthLoading(false); }
         };
 
         window.handleRegister = async function() {
@@ -778,11 +779,12 @@
                 const profileRef = doc(db, 'artifacts/k28-the-sixlayer/public/data/profiles', user.uid);
                 await setDoc(profileRef, { uid: user.uid, name: name, identity: identity, email: email, role: role, loginCount: 0, isActive: true, createdAt: Date.now(), lastLoginAt: Date.now() });
                 await signOut(auth); 
-                showAuthLoading(false); 
                 document.getElementById('verifyEmailText').innerHTML = `認證連結已發送至 <br><strong class="text-primary-700 text-base">${email}</strong>`;
                 window.switchAuthMode('verify'); 
             } catch(e) {
-                showAuthLoading(false); let msg = '註冊失敗'; if(e.code === 'auth/email-already-in-use') msg = '此信箱已被註冊'; window.showToast(msg, 'error');
+                let msg = '註冊失敗'; if(e.code === 'auth/email-already-in-use') msg = '此信箱已被註冊'; window.showToast(msg, 'error');
+            } finally {
+                showAuthLoading(false);
             }
         };
 
@@ -792,15 +794,17 @@
             showAuthLoading(true);
             try {
                 const cred = await signInWithEmailAndPassword(auth, email, password);
-                if(!cred.user.emailVerified) { await signOut(auth); showAuthLoading(false); window.showToast('信箱尚未驗證！請至信箱點擊連結。', 'error'); return; }
-            } catch(e) { showAuthLoading(false); window.showToast('登入失敗，請檢查信箱與密碼', 'error'); }
+                if(!cred.user.emailVerified) { await signOut(auth); window.showToast('信箱尚未驗證！請至信箱點擊連結。', 'error'); return; }
+            } catch(e) { window.showToast('登入失敗，請檢查信箱與密碼', 'error'); }
+            finally { showAuthLoading(false); }
         };
 
         window.handleResetPassword = async function() {
             const email = document.getElementById('forgotEmail').value.trim(); if(!email) { window.showToast('請輸入註冊信箱', 'error'); return; }
             showAuthLoading(true);
-            try { await sendPasswordResetEmail(auth, email); showAuthLoading(false); window.switchAuthMode('login'); window.showToast('重設密碼信已發送，請檢查您的信箱。', 'success'); } 
-            catch(e) { showAuthLoading(false); window.showToast('發送失敗，請確認信箱正確', 'error'); }
+            try { await sendPasswordResetEmail(auth, email); window.switchAuthMode('login'); window.showToast('重設密碼信已發送，請檢查您的信箱。', 'success'); } 
+            catch(e) { window.showToast('發送失敗，請確認信箱正確', 'error'); }
+            finally { showAuthLoading(false); }
         };
 
         window.handleLogout = async function() {
@@ -813,7 +817,6 @@
                 app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app); storage = getStorage(app);
                 onAuthStateChanged(auth, async (user) => {
                     showAuthLoading(false);
-                    // 【修復空指標錯誤】：使用 user?.emailVerified 來確保 user 物件存在
                     if (user && (user?.emailVerified || user?.providerData.some(p => p.providerId === 'google.com'))) {
                         currentUser = user; currentUid = user.uid; isOnline = true;
                         try {
@@ -890,15 +893,23 @@
             const startTs = new Date(startDate).getTime(); const endTs = new Date(endDate).getTime() + 86399999; const filteredUsers = adminUsersData.filter(u => u.createdAt >= startTs && u.createdAt <= endTs);
             const stats = { period: `${startDate} ~ ${endDate}`, totalNewUsers: filteredUsers.length, roleBreakdown: { tonyStudents: filteredUsers.filter(u => u.identity === 'TONY老師學員').length, visitors: filteredUsers.filter(u => u.identity !== 'TONY老師學員').length }, totalLoginsDuringPeriod: filteredUsers.reduce((sum, u) => sum + (u.loginCount || 0), 0) };
 
-            window.hideModal('adminReportModal'); document.getElementById('reportLoadingOverlay').classList.remove('hidden'); document.getElementById('reportLoadingOverlay').classList.add('flex'); document.getElementById('mainLoadingTitle').innerText = 'AI 產出營運報告中';
-            const sys = "你是一位數據營運長。請根據提供的 JSON 會員數據，撰寫一份專業的「營運分析報告」。包含趨勢、客群結構分析與建議。請直接回傳純 HTML 標籤碼 (使用 h2, p, ul)，絕對不要包含任何 back-ticks 符號。";
-            const resHTML = await callGemini(sys, JSON.stringify(stats), false);
-            document.getElementById('reportLoadingOverlay').classList.add('hidden'); document.getElementById('reportLoadingOverlay').classList.remove('flex');
+            window.hideModal('adminReportModal'); 
+            document.getElementById('reportLoadingOverlay').classList.remove('hidden'); 
+            document.getElementById('reportLoadingOverlay').classList.add('flex'); 
+            document.getElementById('mainLoadingTitle').innerText = 'AI 產出營運報告中';
 
-            if(resHTML) {
-                let cleanHTML = resHTML.replace(/```html/g, '').replace(/```/g, '');
-                const wordHTML = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>平台營運報告</title></head><body style="font-family: '微軟正黑體', sans-serif;"><h1 style="color:#1e3a8a;">SMEbig 平台營運分析報告 (${startDate}至${endDate})</h1><hr/>${cleanHTML}</body></html>`;
-                const blob = new Blob(['\ufeff', wordHTML], { type: 'application/msword' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `營運報告_${startDate}_${endDate}.doc`; link.click(); window.showToast('✅ 營運報告已下載');
+            try {
+                const sys = "你是一位數據營運長。請根據提供的 JSON 會員數據，撰寫一份專業的「營運分析報告」。包含趨勢、客群結構分析與建議。請直接回傳純 HTML 標籤碼 (使用 h2, p, ul)，絕對不要包含任何 back-ticks 符號。";
+                const resHTML = await callGemini(sys, JSON.stringify(stats), false);
+
+                if(resHTML) {
+                    let cleanHTML = resHTML.replace(/```html/g, '').replace(/```/g, '');
+                    const wordHTML = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>平台營運報告</title></head><body style="font-family: '微軟正黑體', sans-serif;"><h1 style="color:#1e3a8a;">SMEbig 平台營運分析報告 (${startDate}至${endDate})</h1><hr/>${cleanHTML}</body></html>`;
+                    const blob = new Blob(['\ufeff', wordHTML], { type: 'application/msword' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `營運報告_${startDate}_${endDate}.doc`; link.click(); window.showToast('✅ 營運報告已下載');
+                }
+            } finally {
+                document.getElementById('reportLoadingOverlay').classList.add('hidden'); 
+                document.getElementById('reportLoadingOverlay').classList.remove('flex');
             }
         };
 
@@ -912,7 +923,7 @@
         window.updateProjectTitle = function(val) { if(appState.currentProjectId && appState.projects[appState.currentProjectId]) { appState.projects[appState.currentProjectId].title = val || "未命名"; appState.projects[appState.currentProjectId].updatedAt = Date.now(); saveToLocal(); debouncedCloudSave(appState.currentProjectId); } };
         window.handleInput = function(stageId, fieldId, value) { const pid = appState.currentProjectId; if(!pid) return; appState.projects[pid].data[stageId][fieldId] = value; appState.projects[pid].updatedAt = Date.now(); saveToLocal(); debouncedCloudSave(pid); };
 
-        // --- 核心更新：徹底解決複選框單選問題 (防呆、純陣列控制、即時渲染) ---
+        // --- 本地狀態更新：解決複選框單選問題 (防呆、純陣列控制、即時渲染) ---
         window.toggleCheckbox = function(stageId, fieldId, value, max) {
             const pid = appState.currentProjectId;
             if(!pid || !appState.projects[pid] || !appState.projects[pid].data[stageId]) return;
@@ -967,13 +978,37 @@
         window.optimizeCurrentStageWith3P = async function() {
             const pid = appState.currentProjectId; const stage = DIAGNOSIS_STAGES.find(s => s.id === appState.currentStageId); const currentData = appState.projects[pid].data[stage.id];
             if(!currentData || !Object.values(currentData).some(v => v.trim() !== '' && v.length !== 0)) { window.showToast('請先填寫一些內容才能進行 3P 優化', 'error'); return; }
-            document.getElementById('mainLoadingTitle').innerText = '✨ 3P 提問法優化中'; document.getElementById('mainLoadingDesc').innerText = 'AI 顧問正在為您重構內容...'; document.getElementById('reportLoadingOverlay').classList.remove('hidden'); document.getElementById('reportLoadingOverlay').classList.add('flex');
-            const fieldKeys = stage.fields.map(f => f.id); const sys = `你是一位麥肯錫戰略顧問。請用《3P 提問法》優化使用者在【${stage.title}】填寫的內容。請回傳 JSON 物件，key 對應：[${fieldKeys.join(', ')}]。請勿回傳 JSON 以外的任何文字。`;
-            const res = await callGemini(sys, JSON.stringify(currentData), true); document.getElementById('reportLoadingOverlay').classList.add('hidden'); document.getElementById('reportLoadingOverlay').classList.remove('flex');
-            if(res && typeof res === 'object') { fieldKeys.forEach(k => { if(res[k]) appState.projects[pid].data[stage.id][k] = res[k]; }); saveToLocal(); debouncedCloudSave(pid); renderStage(); window.showToast('✅ 3P 內容優化完成！'); } else window.showToast('優化失敗，請重試', 'error');
+            
+            document.getElementById('mainLoadingTitle').innerText = '✨ 3P 提問法優化中'; 
+            document.getElementById('mainLoadingDesc').innerText = 'AI 顧問正在為您重構內容...'; 
+            document.getElementById('reportLoadingOverlay').classList.remove('hidden'); 
+            document.getElementById('reportLoadingOverlay').classList.add('flex');
+            
+            try {
+                const fieldKeys = stage.fields.map(f => f.id); 
+                const sys = `你是一位頂級麥肯錫戰略顧問。請用《3P 提問法》優化使用者在【${stage.title}】填寫的內容。
+                【嚴格輸出限制】：
+                1. 僅輸出合法的 JSON 字串。
+                2. 絕對不要使用 \`\`\`json 等 Markdown 標記，直接以 { 開頭。
+                3. Key 必須完全對應：[${fieldKeys.join(', ')}]。
+                範例：{"${fieldKeys[0]}": "優化內容", "${fieldKeys[1]}": "優化內容"}`;
+                
+                const res = await callGemini(sys, JSON.stringify(currentData), true); 
+                
+                if(res && typeof res === 'object') { 
+                    fieldKeys.forEach(k => { if(res[k]) appState.projects[pid].data[stage.id][k] = res[k]; }); 
+                    saveToLocal(); debouncedCloudSave(pid); renderStage(); 
+                    window.showToast('✅ 3P 內容優化完成！'); 
+                } else {
+                    window.showToast('優化失敗，請重試', 'error');
+                }
+            } finally {
+                document.getElementById('reportLoadingOverlay').classList.add('hidden'); 
+                document.getElementById('reportLoadingOverlay').classList.remove('flex');
+            }
         };
 
-        // --- 新增：AI 智能判斷價值分類 ---
+        // --- AI 智能判斷價值分類 ---
         window.aiPredictValueType = async function(stageId, fieldId) {
             const pid = appState.currentProjectId;
             const data = appState.projects[pid].data[stageId];
@@ -989,17 +1024,15 @@
             document.getElementById('mainLoadingTitle').innerText = '✨ AI 智能判斷中'; 
             document.getElementById('mainLoadingDesc').innerText = '正在分析您的價值主張，為您挑選最適合的分類...';
 
-            const sys = `你是一位精準的商業分析師。
-            請閱讀以下使用者的「核心價值主張」：
-            「${mainValue}」
-            
-            請從以下四個選項中，挑選出最符合此主張的 1 到 2 個項目：
-            ["增加營收", "降低成本", "加快流程", "避免風險"]
-            
-            必須嚴格回傳 JSON 陣列格式，例如：["增加營收", "加快流程"]。
-            請勿回傳 JSON 以外的任何文字。`;
-
             try {
+                const sys = `你是一位精準的商業分析師。請閱讀以下「核心價值主張」：
+                「${mainValue}」
+                請從以下四個選項中，挑選最符合的 1~2 項：["增加營收", "降低成本", "加快流程", "避免風險"]
+                【嚴格輸出限制】：
+                1. 僅輸出合法的 JSON 陣列字串。
+                2. 絕對不要使用 \`\`\`json 等 Markdown 標記，直接以 [ 開頭。
+                範例：["增加營收", "加快流程"]`;
+
                 const res = await callGemini(sys, "請判斷", true);
                 if (Array.isArray(res) && res.length > 0) {
                     appState.projects[pid].data[stageId][fieldId] = res.slice(0, 2); // 確保最多只拿兩個
@@ -1011,8 +1044,6 @@
                 } else {
                     window.showToast('判斷失敗，格式錯誤', 'error');
                 }
-            } catch(e) {
-                window.showToast('判斷失敗，請重試', 'error');
             } finally {
                 document.getElementById('reportLoadingOverlay').classList.add('hidden'); 
                 document.getElementById('reportLoadingOverlay').classList.remove('flex');
@@ -1026,7 +1057,6 @@
                 const rawVal = data[f.id];
                 const strVal = Array.isArray(rawVal) ? rawVal.join(', ') : (rawVal || '');
                 
-                // 新增：只有在價值分類時，顯示 AI 智能判斷按鈕
                 const aiBtnHtml = (f.id === 'valueType') ? `<button type="button" onclick="window.aiPredictValueType('${stage.id}', '${f.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-1 px-3 rounded-full flex items-center gap-1.5 transition-colors shadow-sm shrink-0"><i class="fas fa-magic"></i> AI 智能判斷</button>` : '';
 
                 html += `<div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm focus-within:border-primary-400 focus-within:shadow-md transition-all group">
@@ -1044,7 +1074,6 @@
                     html += `<select class="form-input text-sm" onchange="window.handleInput('${stage.id}', '${f.id}', this.value)"><option value="">請選擇...</option>${f.options.map(o => `<option value="${o}" ${strVal === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
                 } else if (f.type === 'checkboxes') {
                     let selectedVals = [];
-                    // 確保渲染時也能正確解析舊資料
                     if (Array.isArray(rawVal)) {
                         selectedVals = rawVal;
                     } else if (typeof rawVal === 'string' && rawVal.trim() !== '') {
@@ -1074,6 +1103,46 @@
         window.saveKey = function() { const key = document.getElementById('apiKeyInput').value.trim(); if(key) { appState.apiKey = key; window.showToast('API Key 已設定'); } else { appState.apiKey = ""; window.showToast('已清除 Key，將使用系統底層額度', 'success'); } };
         window.toggleKey = function() { const el = document.getElementById('apiKeyInput'); const ic = document.getElementById('keyIcon'); if(el.type === 'password') { el.type = 'text'; ic.className = 'fas fa-eye-slash text-xs'; } else { el.type = 'password'; ic.className = 'fas fa-eye text-xs'; } };
 
+        // --- 核心防呆解析機制 (Self-Healing JSON) ---
+        function extractAndParseJSON(rawText) {
+            if (typeof rawText !== 'string') return null;
+            let text = rawText.trim();
+            // 先嘗試清理常見的 Markdown 標籤
+            text = text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '');
+            
+            try {
+                return JSON.parse(text); // 第一階段：直接解析
+            } catch (err) {
+                // 第二階段：啟動正則截取與自我修復機制
+                try {
+                    const firstBrace = text.indexOf('{');
+                    const lastBrace = text.lastIndexOf('}');
+                    const firstBracket = text.indexOf('[');
+                    const lastBracket = text.lastIndexOf(']');
+                    
+                    let start = -1;
+                    let end = -1;
+                    
+                    // 判斷是 Object 還是 Array
+                    if (firstBrace !== -1 && lastBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+                        start = firstBrace; end = lastBrace;
+                    } else if (firstBracket !== -1 && lastBracket !== -1) {
+                        start = firstBracket; end = lastBracket;
+                    }
+                    
+                    if (start !== -1 && end !== -1 && end > start) {
+                        let extracted = text.substring(start, end + 1);
+                        // 修復 Gemini 常見的格式化錯誤 (例如陣列或物件尾部多餘的逗號)
+                        extracted = extracted.replace(/,\s*([\}\]])/g, '$1'); 
+                        return JSON.parse(extracted);
+                    }
+                } catch (e2) {}
+                console.error("AI 輸出無法被強行解析為 JSON:", text);
+                throw new Error("模型回傳的資料格式異常，無法解析。");
+            }
+        }
+
+        // --- 具備指數輪詢與模型備援的企業級 API 呼叫 ---
         async function callGemini(sysPrompt, userContent, isJson, fileParts = []) {
             let parts = []; 
             if(typeof userContent === 'string') parts.push({ text: userContent }); 
@@ -1092,7 +1161,7 @@
                 try {
                     // 第 4 次嘗試 (超過 maxRetries)，觸發自動模型備援
                     if (attempt === maxRetries + 1) {
-                        currentModel = "gemini-3.5-flash"; // 備援模型
+                        currentModel = "gemini-3.5-flash"; 
                         window.showToast('系統滿載，已切換至備援模型執行', 'success');
                     }
 
@@ -1104,36 +1173,34 @@
                     });
 
                     if (!res.ok) {
-                        // 1. 處理致命錯誤 (不重試，立即中斷)
                         if (res.status === 400 || res.status === 401 || res.status === 403) {
                             throw new Error(`API 參數或授權錯誤 (${res.status})`);
                         }
-                        
-                        // 2. 處理 429 頻率限制 (執行指數輪詢重試)
                         if (res.status === 429) {
                             if (attempt <= maxRetries) {
-                                const delaySeconds = Math.pow(2, attempt); // 呈指數遞增：2秒、4秒、8秒
+                                const delaySeconds = Math.pow(2, attempt); 
                                 window.showToast(`伺服器忙碌中，正在進行第 ${attempt} 次重試... (${delaySeconds}秒後)`, 'error');
                                 await sleep(delaySeconds * 1000);
                                 attempt++;
-                                continue; // 重新執行 while 迴圈
+                                continue; 
                             } else {
                                 throw new Error('備援模型亦滿載，請稍後再試 (429)');
                             }
                         }
-                        
-                        // 3. 處理其他伺服器錯誤 (5xx，不納入重試範圍)
                         throw new Error(`伺服器無法回應 (${res.status})`);
                     }
 
                     const data = await res.json();
                     const text = data.candidates[0].content.parts[0].text;
-                    return isJson ? JSON.parse(text) : text;
+                    
+                    if (isJson) {
+                        return extractAndParseJSON(text); // 呼叫自我修復引擎
+                    }
+                    return text;
 
                 } catch (e) {
-                    // 如果 catch 到 Error，直接印出錯誤並中斷迴圈返回 null
                     console.error("Gemini API Error:", e);
-                    window.showToast(`連線失敗：${e.message || '請檢查網路連線'}`, 'error');
+                    window.showToast(`連線或解析失敗：${e.message || '請檢查網路連線'}`, 'error');
                     return null;
                 }
             }
@@ -1143,12 +1210,30 @@
         window.triggerAI = async function(action) {
             const stage = DIAGNOSIS_STAGES.find(s => s.id === appState.currentStageId); const data = appState.projects[appState.currentProjectId].data[stage.id];
             if(!data || !Object.values(data).some(v => v.trim() !== '')) { window.showToast('請先填寫內容', 'error'); return; }
-            let sys = `你是麥肯錫等級顧問。協助評估【${stage.title}】。使用繁體中文。\n`; if (action === 'ask') sys += `對使用者輸入進行追問。\n回傳 JSON: {"questions": [{"q": "問題", "reason": "說明"}]}`; else sys += `檢查邏輯一致性與風險。\n回傳 JSON: {"issues": [{"type": "風險類型", "msg": "說明", "severity": "高/中/低"}]}`;
-            document.getElementById('aiLoading').classList.remove('hidden'); const res = await callGemini(sys, JSON.stringify(data, null, 2), true); document.getElementById('aiLoading').classList.add('hidden');
-            if (res) {
-                const chat = document.getElementById('aiChatArea'); let html = `<div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm mt-3 animate-slide-up"><ul class="space-y-3">`;
-                if (action === 'ask' && res.questions) res.questions.forEach(q => html += `<li><strong class="text-slate-800 text-sm block mb-1">${q.q}</strong><span class="text-xs text-slate-600 bg-slate-50 p-2 rounded block">${q.reason}</span></li>`); else if (action === 'check' && res.issues) res.issues.forEach(iss => html += `<li><strong class="text-slate-800 text-sm">${iss.type}</strong><p class="text-xs text-slate-600">${iss.msg}</p></li>`); html += `</ul></div>`;
-                chat.insertAdjacentHTML('beforeend', html); chat.scrollTop = chat.scrollHeight;
+            
+            let sys = `你是麥肯錫等級顧問。協助評估【${stage.title}】。使用繁體中文。\n`; 
+            if (action === 'ask') {
+                sys += `對使用者輸入進行追問。
+                【嚴格輸出限制】：
+                1. 僅輸出合法 JSON 字串，絕對不要包含 Markdown 標記 (\`\`\`json 等)。
+                2. 必須嚴格符合此格式：{"questions": [{"q": "問題", "reason": "說明"}]}`;
+            } else {
+                sys += `檢查邏輯一致性與風險。
+                【嚴格輸出限制】：
+                1. 僅輸出合法 JSON 字串，絕對不要包含 Markdown 標記 (\`\`\`json 等)。
+                2. 必須嚴格符合此格式：{"issues": [{"type": "風險類型", "msg": "說明", "severity": "高/中/低"}]}`;
+            }
+            
+            document.getElementById('aiLoading').classList.remove('hidden'); 
+            try {
+                const res = await callGemini(sys, JSON.stringify(data, null, 2), true); 
+                if (res) {
+                    const chat = document.getElementById('aiChatArea'); let html = `<div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm mt-3 animate-slide-up"><ul class="space-y-3">`;
+                    if (action === 'ask' && res.questions) res.questions.forEach(q => html += `<li><strong class="text-slate-800 text-sm block mb-1">${q.q}</strong><span class="text-xs text-slate-600 bg-slate-50 p-2 rounded block">${q.reason}</span></li>`); else if (action === 'check' && res.issues) res.issues.forEach(iss => html += `<li><strong class="text-slate-800 text-sm">${iss.type}</strong><p class="text-xs text-slate-600">${iss.msg}</p></li>`); html += `</ul></div>`;
+                    chat.insertAdjacentHTML('beforeend', html); chat.scrollTop = chat.scrollHeight;
+                }
+            } finally {
+                document.getElementById('aiLoading').classList.add('hidden');
             }
         };
 
@@ -1158,16 +1243,21 @@
         async function handleFiles(files) {
             const pid = appState.currentProjectId; let projectFiles = appState.projects[pid].files || []; if (!currentUid) { window.showToast('需使用登入才能上傳檔案', 'error'); return; }
             document.getElementById('uploadLoadingOverlay').classList.remove('hidden'); document.getElementById('uploadLoadingOverlay').classList.add('flex'); document.getElementById('uploadLoadingMsg').innerText = "上傳雲端並解析中...";
-            for(let f of files) {
-                try {
-                    const path = `artifacts/k28-the-sixlayer/users/${currentUid}/projects/${pid}/${Date.now()}_${f.name}`;
-                    const storageRef = ref(storage, path); const uploadTask = await uploadBytesResumable(storageRef, f); const downloadURL = await getDownloadURL(uploadTask.ref);
-                    let fileType = f.type, fileData = null, isBase64 = false;
-                    if(f.name.toLowerCase().endsWith('.docx')) { const arrayBuffer = await f.arrayBuffer(); const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer}); fileData = result.value; fileType = 'text/plain'; } else if(f.name.toLowerCase().endsWith('.xlsx')) { const arrayBuffer = await f.arrayBuffer(); const workbook = XLSX.read(arrayBuffer); fileData = XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]); fileType = 'text/plain'; } else if(f.type === 'application/pdf' || f.type.startsWith('image/')) { fileData = await fileToBase64(f); isBase64 = true; } else { fileData = await f.text(); fileType = 'text/plain'; }
-                    projectFiles.push({ id: Date.now().toString(), name: f.name, type: fileType, data: fileData, isBase64: isBase64, storagePath: path, downloadURL: downloadURL });
-                } catch(e) { window.showToast(`處理失敗: ${f.name}`, 'error'); }
+            
+            try {
+                for(let f of files) {
+                    try {
+                        const path = `artifacts/k28-the-sixlayer/users/${currentUid}/projects/${pid}/${Date.now()}_${f.name}`;
+                        const storageRef = ref(storage, path); const uploadTask = await uploadBytesResumable(storageRef, f); const downloadURL = await getDownloadURL(uploadTask.ref);
+                        let fileType = f.type, fileData = null, isBase64 = false;
+                        if(f.name.toLowerCase().endsWith('.docx')) { const arrayBuffer = await f.arrayBuffer(); const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer}); fileData = result.value; fileType = 'text/plain'; } else if(f.name.toLowerCase().endsWith('.xlsx')) { const arrayBuffer = await f.arrayBuffer(); const workbook = XLSX.read(arrayBuffer); fileData = XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]); fileType = 'text/plain'; } else if(f.type === 'application/pdf' || f.type.startsWith('image/')) { fileData = await fileToBase64(f); isBase64 = true; } else { fileData = await f.text(); fileType = 'text/plain'; }
+                        projectFiles.push({ id: Date.now().toString(), name: f.name, type: fileType, data: fileData, isBase64: isBase64, storagePath: path, downloadURL: downloadURL });
+                    } catch(e) { window.showToast(`處理失敗: ${f.name}`, 'error'); }
+                }
+                appState.projects[pid].files = projectFiles; saveToLocal(); debouncedCloudSave(pid); renderFileList(); window.showToast('✅ 檔案上傳完成！');
+            } finally {
+                document.getElementById('uploadLoadingOverlay').classList.add('hidden'); document.getElementById('uploadLoadingOverlay').classList.remove('flex'); 
             }
-            appState.projects[pid].files = projectFiles; saveToLocal(); debouncedCloudSave(pid); renderFileList(); document.getElementById('uploadLoadingOverlay').classList.add('hidden'); document.getElementById('uploadLoadingOverlay').classList.remove('flex'); window.showToast('✅ 檔案上傳完成！');
         }
 
         function fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); }); }
@@ -1191,12 +1281,29 @@
         window.startAIAutoFill = async function() {
             const pid = appState.currentProjectId; const files = appState.projects[pid].files || []; if(files.length === 0) return;
             document.getElementById('uploadLoadingOverlay').classList.remove('hidden'); document.getElementById('uploadLoadingOverlay').classList.add('flex'); document.getElementById('uploadLoadingMsg').innerText = "AI 正在解析...";
-            let fileParts = []; files.forEach(f => { if(f.isBase64) { fileParts.push({ text: `\n[檔案 ${f.name}]\n` }); fileParts.push({ inlineData: { mimeType: f.type, data: f.data } }); } else fileParts.push({ text: `\n[檔案 ${f.name}]\n${f.data}` }); });
-            const emptyData = DIAGNOSIS_STAGES.reduce((acc, stage) => { acc[stage.id] = stage.fields.reduce((fAcc, field) => ({...fAcc, [field.id]: ''}), {}); return acc; }, {});
-            const sys = `你是戰略顧問。解析參考資料填入「六層戰略診斷」框架。必須回傳 JSON，格式完全符合：${JSON.stringify(emptyData)}。請勿加上 Markdown 區塊標記。`;
-            const res = await callGemini(sys, "開始解析檔案：", true, fileParts);
-            document.getElementById('uploadLoadingOverlay').classList.add('hidden'); document.getElementById('uploadLoadingOverlay').classList.remove('flex');
-            if(res && typeof res === 'object') { DIAGNOSIS_STAGES.forEach(stage => { if(res[stage.id]) stage.fields.forEach(f => { if(res[stage.id][f.id]) appState.projects[pid].data[stage.id][f.id] = res[stage.id][f.id]; }); }); saveToLocal(); debouncedCloudSave(pid); window.hideModal('uploadModal'); renderStage(); window.showToast('✅ 解析完成！'); } else window.showToast('解析失敗。', 'error');
+            
+            try {
+                let fileParts = []; files.forEach(f => { if(f.isBase64) { fileParts.push({ text: `\n[檔案 ${f.name}]\n` }); fileParts.push({ inlineData: { mimeType: f.type, data: f.data } }); } else fileParts.push({ text: `\n[檔案 ${f.name}]\n${f.data}` }); });
+                const emptyData = DIAGNOSIS_STAGES.reduce((acc, stage) => { acc[stage.id] = stage.fields.reduce((fAcc, field) => ({...fAcc, [field.id]: ''}), {}); return acc; }, {});
+                
+                const sys = `你是資深戰略顧問。請解析使用者提供的參考資料，並自動歸納填入「六層戰略診斷」框架。
+                【嚴格輸出限制】：
+                1. 僅輸出合法的 JSON 字串。
+                2. 絕對不要使用 \`\`\`json 等 Markdown 標記，直接以 { 開頭。
+                3. 必須完全符合以下結構，若某欄位在資料中找不到資訊，請填入空字串 ""：
+                ${JSON.stringify(emptyData)}`;
+                
+                const res = await callGemini(sys, "開始解析檔案：", true, fileParts);
+                
+                if(res && typeof res === 'object') { 
+                    DIAGNOSIS_STAGES.forEach(stage => { if(res[stage.id]) stage.fields.forEach(f => { if(res[stage.id][f.id]) appState.projects[pid].data[stage.id][f.id] = res[stage.id][f.id]; }); }); 
+                    saveToLocal(); debouncedCloudSave(pid); window.hideModal('uploadModal'); renderStage(); window.showToast('✅ 解析完成！'); 
+                } else {
+                    window.showToast('解析失敗。', 'error');
+                }
+            } finally {
+                document.getElementById('uploadLoadingOverlay').classList.add('hidden'); document.getElementById('uploadLoadingOverlay').classList.remove('flex');
+            }
         };
 
         function parseMarkdownToProfessionalHtml(mdText) {
@@ -1226,27 +1333,36 @@
             document.getElementById('reportLoadingOverlay').classList.remove('hidden'); document.getElementById('reportLoadingOverlay').classList.add('flex');
             document.getElementById('mainLoadingTitle').innerText = 'AI 顧問撰寫報告中'; document.getElementById('mainLoadingDesc').innerText = '正在揉合六層資料與 VSM 價值流圖，請稍候...';
             
-            const sys = `撰寫企業戰略診斷報告。使用繁體中文 Markdown。
-            【排版嚴格限制】：1. 絕對禁止使用 ASCII Art 畫矩陣或時間軸。 2. 所有矩陣、時間軸與行動計畫，都「必須」使用標準 Markdown 表格呈現。 3. 量化指標使用 LaTeX 語法。
-            【報告架構要求】：
-            ### 1. Executive Summary 高階主管摘要
-            ### 2. 現況解構與核心挑戰 (Situation & Complication，請結合 RPV 框架分析)
-            ### 3. VSM 價值流圖盤點與 As-Is 斷點清單 (列出斷點、價值觀阻力與 Muda 浪費)
-            ### 4. BPR 企業流程再造與 To-Be 重構 (重構為單一入口、兩段評估、分級處理、可追溯決策)
-            ### 5. 戰略價值與護城河 (請綜合 TCO 總擁有成本、BSC 平衡計分卡與 Strategy Map 策略地圖視角)
-            ### 6. 關鍵假設與風險評估 (使用表格)
-            ### 7. MVP 驗證行動藍圖與 OKR / RACI 矩陣 (使用表格分配責任與目標)`;
-            
-            const res = await callGemini(sys, JSON.stringify(proj.data), false);
-            document.getElementById('reportLoadingOverlay').classList.add('hidden'); document.getElementById('reportLoadingOverlay').classList.remove('flex');
-            if(res) { appState.projects[pid].aiReportText = parseMarkdownToProfessionalHtml(res); saveToLocal(); debouncedCloudSave(pid); renderReportView(); window.navigate('report'); }
+            try {
+                const sys = `撰寫企業戰略診斷報告。使用繁體中文 Markdown。
+                【排版嚴格限制】：1. 絕對禁止使用 ASCII Art 畫矩陣或時間軸。 2. 所有矩陣、時間軸與行動計畫，都「必須」使用標準 Markdown 表格呈現。 3. 量化指標使用 LaTeX 語法。
+                【報告架構要求】：
+                ### 1. Executive Summary 高階主管摘要
+                ### 2. 現況解構與核心挑戰 (Situation & Complication，請結合 RPV 框架分析)
+                ### 3. VSM 價值流圖盤點與 As-Is 斷點清單 (列出斷點、價值觀阻力與 Muda 浪費)
+                ### 4. BPR 企業流程再造與 To-Be 重構 (重構為單一入口、兩段評估、分級處理、可追溯決策)
+                ### 5. 戰略價值與護城河 (請綜合 TCO 總擁有成本、BSC 平衡計分卡與 Strategy Map 策略地圖視角)
+                ### 6. 關鍵假設與風險評估 (使用表格)
+                ### 7. MVP 驗證行動藍圖與 OKR / RACI 矩陣 (使用表格分配責任與目標)`;
+                
+                const res = await callGemini(sys, JSON.stringify(proj.data), false);
+                
+                if(res) { 
+                    appState.projects[pid].aiReportText = parseMarkdownToProfessionalHtml(res); 
+                    saveToLocal(); debouncedCloudSave(pid); renderReportView(); window.navigate('report'); 
+                } else {
+                    window.showToast('報告產出失敗，請稍後再試', 'error');
+                }
+            } finally {
+                document.getElementById('reportLoadingOverlay').classList.add('hidden'); document.getElementById('reportLoadingOverlay').classList.remove('flex');
+            }
         };
 
         function renderReportView() {
             const container = document.getElementById('reportContent'); const proj = appState.projects[appState.currentProjectId];
             let html = `<div class="report-title-container"><h1>六層戰略診斷報告</h1><div class="meta">${proj.title}</div></div>`;
             if (proj.aiReportText) html += `<div style="margin-bottom: 60px;">${proj.aiReportText}</div>`;
-            html += `<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 10pt; font-family: 'Inter', sans-serif;">@ 2026 TonyStudio. ALL RIGHTS RESERVED.</div>`;
+            html += `<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 10pt; font-family: 'Inter', sans-serif;">@2020 TonyStudio (TONY 楊文澤顧問). ALL RIGHTS RESERVED.</div>`;
             container.innerHTML = html;
             if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false });
         }
@@ -1269,7 +1385,7 @@
                     contentHTML += `<div style="margin-bottom: 20px;"><h3 style="color: #64748b; font-size: 11pt; margin-bottom: 8px;">${f.label}</h3><div style="background-color: #f8fafc; padding: 12px; border-left: 4px solid #94a3b8; font-size: 12pt; white-space: pre-wrap;">${val}</div></div>`;
                 });
             });
-            contentHTML += `<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 10pt;">@ 2026 TonyStudio. ALL RIGHTS RESERVED.</div></div>`;
+            contentHTML += `<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 10pt;">@2020 TonyStudio (TONY 楊文澤顧問). ALL RIGHTS RESERVED.</div></div>`;
             const wordHTML = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${projTitle}_原始資料</title></head><body>${contentHTML}</body></html>`;
             const blob = new Blob(['\ufeff', wordHTML], { type: 'application/msword' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `${projTitle}_原始資料.doc`; link.click(); window.showToast('✅ 原始資料下載中...');
         };
@@ -1294,8 +1410,11 @@
             const loadingId = 'loading-' + Date.now(); const messagesArea = document.getElementById('chatbot-messages');
             messagesArea.insertAdjacentHTML('beforeend', `<div id="${loadingId}" class="flex"><div class="bg-white border border-slate-200 text-slate-400 rounded-xl rounded-tl-none p-3 shadow-sm animate-pulse"><i class="fas fa-ellipsis-h"></i></div></div>`); requestAnimationFrame(() => messagesArea.scrollTop = messagesArea.scrollHeight);
             let contextStr = "目前無資料。"; if (appState.currentProjectId && appState.currentStageId) { const stageData = appState.projects[appState.currentProjectId].data[appState.currentStageId]; if (stageData) contextStr = JSON.stringify(stageData, null, 2); }
+            
             const sysPrompt = `你是 TONY AI 顧問助理。請使用繁體中文。使用者正在編輯某個階段資料。\n【資料】：\n${contextStr}\n請給予專業簡短回答。`;
-            const res = await callGemini(sysPrompt, msg, false); document.getElementById(loadingId)?.remove();
+            const res = await callGemini(sysPrompt, msg, false); 
+            
+            document.getElementById(loadingId)?.remove();
             if (res) addChatMessage(res, 'bot'); else addChatMessage("抱歉，連線錯誤。", 'bot');
         };
 
