@@ -1173,9 +1173,24 @@
                     });
 
                     if (!res.ok) {
-                        if (res.status === 400 || res.status === 401 || res.status === 403) {
-                            throw new Error(`API 參數或授權錯誤 (${res.status})`);
+                        // 嘗試解析 Google 官方詳細錯誤訊息
+                        let serverErrMsg = '';
+                        try {
+                            const errData = await res.json();
+                            serverErrMsg = errData.error?.message || '';
+                        } catch(e) {}
+
+                        // 精準錯誤攔截與友善提示
+                        if (res.status === 403) {
+                            throw new Error(`(403) API 金鑰無效或權限遭拒！請在右上角輸入您專屬的 API Key。詳細原因: ${serverErrMsg}`);
                         }
+                        if (res.status === 404) {
+                            throw new Error(`(404) 模型名稱不存在。請確認模型名稱是否正確。詳細原因: ${serverErrMsg}`);
+                        }
+                        if (res.status === 400) {
+                            throw new Error(`(400) 檔案格式不支援或參數錯誤。詳細原因: ${serverErrMsg}`);
+                        }
+
                         if (res.status === 429) {
                             if (attempt <= maxRetries) {
                                 const delaySeconds = Math.pow(2, attempt); 
@@ -1187,7 +1202,7 @@
                                 throw new Error('備援模型亦滿載，請稍後再試 (429)');
                             }
                         }
-                        throw new Error(`伺服器無法回應 (${res.status})`);
+                        throw new Error(`伺服器無法回應 (${res.status}) - ${serverErrMsg}`);
                     }
 
                     const data = await res.json();
@@ -1200,7 +1215,7 @@
 
                 } catch (e) {
                     console.error("Gemini API Error:", e);
-                    window.showToast(`連線或解析失敗：${e.message || '請檢查網路連線'}`, 'error');
+                    window.showToast(`${e.message || '請檢查網路連線'}`, 'error');
                     return null;
                 }
             }
@@ -1241,20 +1256,89 @@
         window.openUploadModal = function() { renderFileList(); window.showModal('uploadModal'); }; window.handleFileUpload = function(e) { if(e.target.files.length > 0) { handleFiles(e.target.files); e.target.value = ''; } };
 
         async function handleFiles(files) {
-            const pid = appState.currentProjectId; let projectFiles = appState.projects[pid].files || []; if (!currentUid) { window.showToast('需使用登入才能上傳檔案', 'error'); return; }
-            document.getElementById('uploadLoadingOverlay').classList.remove('hidden'); document.getElementById('uploadLoadingOverlay').classList.add('flex'); document.getElementById('uploadLoadingMsg').innerText = "上傳雲端並解析中...";
+            const pid = appState.currentProjectId; let projectFiles = appState.projects[pid].files || []; 
+            if (!currentUid) { window.showToast('需使用登入才能上傳檔案', 'error'); return; }
+            document.getElementById('uploadLoadingOverlay').classList.remove('hidden'); document.getElementById('uploadLoadingOverlay').classList.add('flex'); document.getElementById('uploadLoadingMsg').innerText = "雲端上傳與深度解析中...";
             
             try {
                 for(let f of files) {
                     try {
+                        const ext = f.name.split('.').pop().toLowerCase();
+                        
+                        // 1. 攔截地雷格式：PPT / PPTX
+                        if (['ppt', 'pptx'].includes(ext)) {
+                            window.showToast(`暫不支援簡報檔！請將「${f.name}」另存為 PDF 後再上傳，AI 才能讀取。`, 'error');
+                            continue;
+                        }
+                        
+                        // 2. 攔截舊版 Word (.doc)
+                        if (ext === 'doc') {
+                            window.showToast(`不支援舊版 Word！請將「${f.name}」轉存為較新的 .docx 或 PDF。`, 'error');
+                            continue;
+                        }
+
+                        let fileType = f.type || 'application/octet-stream', fileData = null, isBase64 = false;
+
+                        // 3. 安全解析 Word (.docx)
+                        if(ext === 'docx') { 
+                            try {
+                                const arrayBuffer = await f.arrayBuffer(); 
+                                const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer}); 
+                                fileData = result.value; 
+                                fileType = 'text/plain'; 
+                                if (!fileData || fileData.trim() === '') {
+                                    window.showToast(`「${f.name}」抽不出文字（可能皆為圖片），建議轉存為 PDF 讓 AI 直接看圖！`, 'error');
+                                    continue;
+                                }
+                            } catch (docErr) {
+                                console.error("Word 解析錯誤:", docErr);
+                                window.showToast(`「${f.name}」Word 結構複雜解析失敗，建議轉存為 PDF 上傳。`, 'error');
+                                continue;
+                            }
+                        } 
+                        // 4. 安全解析 Excel (.xlsx, .csv)
+                        else if(['xlsx', 'xls', 'csv'].includes(ext)) { 
+                            try {
+                                const arrayBuffer = await f.arrayBuffer(); 
+                                const workbook = XLSX.read(arrayBuffer); 
+                                fileData = XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]); 
+                                fileType = 'text/plain'; 
+                            } catch (xlsErr) {
+                                console.error("Excel 解析錯誤:", xlsErr);
+                                window.showToast(`「${f.name}」Excel 解析失敗，建議轉存為 PDF 上傳。`, 'error');
+                                continue;
+                            }
+                        } 
+                        // 5. PDF 與 圖片直接餵給 Gemini (最佳解)
+                        else if(f.type === 'application/pdf' || f.type.startsWith('image/')) { 
+                            fileData = await fileToBase64(f); 
+                            isBase64 = true; 
+                        } 
+                        // 6. 純文字
+                        else if(f.type.startsWith('text/') || ext === 'txt') { 
+                            fileData = await f.text(); 
+                            fileType = 'text/plain'; 
+                        } 
+                        // 7. 防呆：攔截未知的二進制檔案，避免亂碼塞爆 API
+                        else {
+                            window.showToast(`不支援「${f.name}」這類特殊格式，請統一轉存為 PDF！`, 'error');
+                            continue;
+                        }
+
+                        // 8. 真正執行上傳 Firebase Storage
                         const path = `artifacts/k28-the-sixlayer/users/${currentUid}/projects/${pid}/${Date.now()}_${f.name}`;
-                        const storageRef = ref(storage, path); const uploadTask = await uploadBytesResumable(storageRef, f); const downloadURL = await getDownloadURL(uploadTask.ref);
-                        let fileType = f.type, fileData = null, isBase64 = false;
-                        if(f.name.toLowerCase().endsWith('.docx')) { const arrayBuffer = await f.arrayBuffer(); const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer}); fileData = result.value; fileType = 'text/plain'; } else if(f.name.toLowerCase().endsWith('.xlsx')) { const arrayBuffer = await f.arrayBuffer(); const workbook = XLSX.read(arrayBuffer); fileData = XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]); fileType = 'text/plain'; } else if(f.type === 'application/pdf' || f.type.startsWith('image/')) { fileData = await fileToBase64(f); isBase64 = true; } else { fileData = await f.text(); fileType = 'text/plain'; }
+                        const storageRef = ref(storage, path); 
+                        const uploadTask = await uploadBytesResumable(storageRef, f); 
+                        const downloadURL = await getDownloadURL(uploadTask.ref);
+                        
                         projectFiles.push({ id: Date.now().toString(), name: f.name, type: fileType, data: fileData, isBase64: isBase64, storagePath: path, downloadURL: downloadURL });
-                    } catch(e) { window.showToast(`處理失敗: ${f.name}`, 'error'); }
+                        window.showToast(`✅ ${f.name} 解析完成！`);
+                    } catch(e) { 
+                        window.showToast(`檔案處理發生意外: ${f.name}`, 'error'); 
+                        console.error(e);
+                    }
                 }
-                appState.projects[pid].files = projectFiles; saveToLocal(); debouncedCloudSave(pid); renderFileList(); window.showToast('✅ 檔案上傳完成！');
+                appState.projects[pid].files = projectFiles; saveToLocal(); debouncedCloudSave(pid); renderFileList(); 
             } finally {
                 document.getElementById('uploadLoadingOverlay').classList.add('hidden'); document.getElementById('uploadLoadingOverlay').classList.remove('flex'); 
             }
@@ -1279,24 +1363,81 @@
         }
 
         window.startAIAutoFill = async function() {
-            const pid = appState.currentProjectId; const files = appState.projects[pid].files || []; if(files.length === 0) return;
-            document.getElementById('uploadLoadingOverlay').classList.remove('hidden'); document.getElementById('uploadLoadingOverlay').classList.add('flex'); document.getElementById('uploadLoadingMsg').innerText = "AI 正在解析...";
+            const pid = appState.currentProjectId; 
+            const files = appState.projects[pid].files || []; 
+            if(files.length === 0) return;
+
+            document.getElementById('uploadLoadingOverlay').classList.remove('hidden'); 
+            document.getElementById('uploadLoadingOverlay').classList.add('flex'); 
+            document.getElementById('uploadLoadingMsg').innerText = "AI 正在解析...";
             
             try {
-                let fileParts = []; files.forEach(f => { if(f.isBase64) { fileParts.push({ text: `\n[檔案 ${f.name}]\n` }); fileParts.push({ inlineData: { mimeType: f.type, data: f.data } }); } else fileParts.push({ text: `\n[檔案 ${f.name}]\n${f.data}` }); });
-                const emptyData = DIAGNOSIS_STAGES.reduce((acc, stage) => { acc[stage.id] = stage.fields.reduce((fAcc, field) => ({...fAcc, [field.id]: ''}), {}); return acc; }, {});
+                let fileParts = []; 
+                let skippedFiles = 0;
+
+                files.forEach(f => { 
+                    const ext = f.name.split('.').pop().toLowerCase();
+                    if (['ppt', 'pptx', 'doc'].includes(ext)) {
+                        skippedFiles++;
+                        return;
+                    }
+
+                    if(f.isBase64) { 
+                        fileParts.push({ text: `\n[檔案 ${f.name}]\n` }); 
+                        fileParts.push({ inlineData: { mimeType: f.type, data: f.data } }); 
+                    } else {
+                        fileParts.push({ text: `\n[檔案 ${f.name}]\n${f.data}` }); 
+                    }
+                });
+
+                if (fileParts.length === 0) {
+                     window.showToast('您上傳的檔案皆無法被 AI 讀取 (例如 PPTX)，請轉存 PDF 後重試。', 'error');
+                     return;
+                }
+
+                if (skippedFiles > 0) {
+                     window.showToast(`已略過 ${skippedFiles} 份不支援的檔案 (如 PPTX) 進行解析。`, 'success');
+                }
+
+                // 強制規範 valueType 的初始結構為空陣列，引導 AI
+                const emptyData = DIAGNOSIS_STAGES.reduce((acc, stage) => { 
+                    acc[stage.id] = stage.fields.reduce((fAcc, field) => {
+                        if (field.id === 'valueType') return {...fAcc, [field.id]: []};
+                        return {...fAcc, [field.id]: ''};
+                    }, {}); 
+                    return acc; 
+                }, {});
                 
                 const sys = `你是資深戰略顧問。請解析使用者提供的參考資料，並自動歸納填入「六層戰略診斷」框架。
-                【嚴格輸出限制】：
+                【Schema 嚴格限制】：
                 1. 僅輸出合法的 JSON 字串。
                 2. 絕對不要使用 \`\`\`json 等 Markdown 標記，直接以 { 開頭。
-                3. 必須完全符合以下結構，若某欄位在資料中找不到資訊，請填入空字串 ""：
-                ${JSON.stringify(emptyData)}`;
+                3. "valueType" 欄位必須是陣列 (Array)，且只能從 ["增加營收", "降低成本", "加快流程", "避免風險"] 這 4 個選項中挑選最符合的 1~2 項。如果找不到對應的，請回傳空陣列 []，絕對不允許發揮創意寫其他文字。
+                4. 必須完全符合以下結構，若某欄位在資料中找不到資訊，請填入空字串 ""：
+                ${JSON.stringify(emptyData, null, 2)}`;
                 
                 const res = await callGemini(sys, "開始解析檔案：", true, fileParts);
                 
                 if(res && typeof res === 'object') { 
-                    DIAGNOSIS_STAGES.forEach(stage => { if(res[stage.id]) stage.fields.forEach(f => { if(res[stage.id][f.id]) appState.projects[pid].data[stage.id][f.id] = res[stage.id][f.id]; }); }); 
+                    DIAGNOSIS_STAGES.forEach(stage => { 
+                        if(res[stage.id]) {
+                            stage.fields.forEach(f => { 
+                                if(res[stage.id][f.id] !== undefined) {
+                                    // 防呆：如果 AI 不聽話，把陣列選項寫成了字串，自動容錯轉換
+                                    if (f.id === 'valueType' && typeof res[stage.id][f.id] === 'string') {
+                                        let aiStr = res[stage.id][f.id];
+                                        let matched = [];
+                                        ['增加營收', '降低成本', '加快流程', '避免風險'].forEach(opt => {
+                                            if (aiStr.includes(opt)) matched.push(opt);
+                                        });
+                                        appState.projects[pid].data[stage.id][f.id] = matched;
+                                    } else {
+                                        appState.projects[pid].data[stage.id][f.id] = res[stage.id][f.id]; 
+                                    }
+                                } 
+                            }); 
+                        }
+                    }); 
                     saveToLocal(); debouncedCloudSave(pid); window.hideModal('uploadModal'); renderStage(); window.showToast('✅ 解析完成！'); 
                 } else {
                     window.showToast('解析失敗。', 'error');
