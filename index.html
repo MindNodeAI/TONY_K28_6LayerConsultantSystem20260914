@@ -375,7 +375,7 @@
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 shadow-inner"><i class="fas fa-robot text-sm"></i></div>
-                                <div><h3 class="font-bold text-slate-800 text-sm">AI 戰略教練</h3><p class="text-[10px] text-primary-600 font-semibold uppercase tracking-wider">Gemini 3.8 Flash</p></div>
+                                <div><h3 class="font-bold text-slate-800 text-sm">AI 戰略教練</h3><p class="text-[10px] text-primary-600 font-semibold uppercase tracking-wider">Gemini 4 Hydrogen</p></div>
                             </div>
                             <button onclick="window.generateAndShowReport()" class="md:hidden text-xs bg-slate-800 text-white px-3 py-1.5 rounded flex items-center gap-1 font-semibold">
                                 <i class="fas fa-file-contract"></i> 報告
@@ -1155,13 +1155,13 @@
             const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
             const maxRetries = 3;
             let attempt = 1;
-            let currentModel = "gemini-3.8-flash";
+            let currentModel = "gemini-4-hydrogen";
 
             while (attempt <= maxRetries + 1) {
                 try {
                     // 第 4 次嘗試 (超過 maxRetries)，觸發自動模型備援
                     if (attempt === maxRetries + 1) {
-                        currentModel = "gemini-3.5-flash"; 
+                        currentModel = "gemini-3.8-flash"; 
                         window.showToast('系統滿載，已切換至備援模型執行', 'success');
                     }
 
